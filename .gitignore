@@ -41,3 +41,6 @@ pnpm-debug.log*
 # Local-only project files (kept on disk, never pushed)
 .claude/
 CLAUDE.md
+
+# GSD planning docs (local-only)
+.planning/
