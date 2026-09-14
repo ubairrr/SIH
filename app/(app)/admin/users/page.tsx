@@ -1,18 +1,26 @@
 import { authorize } from "@/app/lib/authorize";
+import { prisma } from "@/app/lib/prisma";
+import { AdminUsersPageClient } from "./users-page-client";
 
-// Stub for Plan 01-02 (Admin user management). Exists in Plan 01-01 solely
-// to prove the server-side role gate: authorize({ role: "ADMIN" }) below
-// redirects any non-Admin requester to /dashboard, not just hides a nav
-// link (AUTH-03, D-16).
+// AUTH-04/AUTH-05/LOG-01: Admin's full user-management surface. Data-fetch
+// starts with authorize({ role: "ADMIN" }) — the real server-side gate;
+// passwordHash is never selected, so it can never reach the client bundle.
 export default async function AdminUsersPage() {
-  await authorize({ role: "ADMIN" });
+  const admin = await authorize({ role: "ADMIN" });
 
-  return (
-    <div>
-      <h1 className="text-lg font-semibold text-white">Users</h1>
-      <p className="mt-4 text-slate-400">
-        User management arrives in the next plan.
-      </p>
-    </div>
-  );
+  const users = await prisma.user.findMany({
+    orderBy: { fullName: "asc" },
+    select: {
+      id: true,
+      fullName: true,
+      username: true,
+      role: true,
+      designation: true,
+      unit: true,
+      badgeId: true,
+      isActive: true,
+    },
+  });
+
+  return <AdminUsersPageClient users={users} currentUserId={admin.id} />;
 }
