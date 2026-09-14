@@ -6,8 +6,13 @@ import { useForm } from "react-hook-form";
 
 import { login, type LoginState } from "@/app/actions/auth";
 import { loginSchema, type LoginInput } from "@/app/lib/validation/auth";
+import {
+  DEMO_ACCOUNTS,
+  DEMO_PASSWORD,
+} from "@/app/lib/demo-accounts";
+import { ROLE_LABELS } from "@/app/lib/role-display";
 
-export function LoginForm() {
+export function LoginForm({ demoMode }: { demoMode: boolean }) {
   const [state, formAction, pending] = useActionState<LoginState, FormData>(
     login,
     undefined,
@@ -16,6 +21,7 @@ export function LoginForm() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -76,6 +82,35 @@ export function LoginForm() {
       >
         {pending ? "Signing in…" : "Sign in"}
       </button>
+
+      {demoMode && (
+        <div className="mt-4 border-t border-slate-800 pt-4">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
+            Demo accounts
+          </p>
+          <ul className="flex flex-col gap-1">
+            {DEMO_ACCOUNTS.map((account) => (
+              <li key={account.username}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue("username", account.username);
+                    setValue("password", DEMO_PASSWORD);
+                  }}
+                  className="w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-1.5 text-left text-sm text-slate-300 transition hover:border-teal-500 hover:text-white"
+                >
+                  <span className="font-medium">
+                    {ROLE_LABELS[account.role]}
+                  </span>{" "}
+                  <span className="text-slate-500">
+                    — {account.username}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </form>
   );
 }
