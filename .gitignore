@@ -35,8 +35,12 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+!.env.local.example
 *.pem
 *.key
+
+# Offline-mode local storage (LocalDiskStorageAdapter output)
+.data/
 
 # Local-only project files (kept on disk, never pushed)
 .claude/

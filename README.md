@@ -1,5 +1,26 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Offline mode (one command)
+
+CaseVault runs identically as a fully offline, single-laptop stack — no internet
+dependency, no Supabase/Vercel network calls — switched purely by environment
+configuration (`STORAGE_DRIVER`, `DATABASE_URL`/`DIRECT_URL`), never by code
+branching.
+
+1. `cp .env.local.example .env.local` and fill in `SESSION_SECRET` (generate one
+   with `openssl rand -base64 32`).
+2. `npm run dev:offline`
+
+That single command:
+
+- starts local Postgres 17 via Docker Compose (`docker compose up -d --wait`)
+- applies all committed Prisma migrations, including the append-only audit-log
+  trigger, against that local database (`prisma migrate deploy`)
+- seeds the 5 demo accounts (`prisma db seed`)
+- starts the app at [http://localhost:3000](http://localhost:3000) (`next dev`)
+
+Requires Docker and Docker Compose installed and running.
+
 ## Getting Started
 
 First, run the development server:

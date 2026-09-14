@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:offline": "docker compose up -d --wait && bash -c 'set -a; source .env.local; set +a; npx prisma migrate deploy && npx prisma db seed && npx next dev'",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -15,6 +16,7 @@
   "dependencies": {
     "@hookform/resolvers": "5.9.1",
     "@prisma/client": "6.19.3",
+    "@supabase/supabase-js": "2.116.0",
     "bcryptjs": "3.0.3",
     "jose": "6.2.12",
     "next": "16.3.5",
