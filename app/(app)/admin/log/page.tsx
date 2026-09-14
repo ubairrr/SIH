@@ -1,6 +1,7 @@
 import { authorize } from "@/app/lib/authorize";
 import { getAuditLogPage } from "@/app/actions/audit";
 import { PaginationControls } from "./pagination-controls";
+import { TamperTestPanel } from "./tamper-test-panel";
 
 const PAGE_SIZE = 25;
 
@@ -34,6 +35,8 @@ export default async function AdminLogPage({
   return (
     <div>
       <h1 className="text-lg font-semibold text-white">Change Log</h1>
+
+      <TamperTestPanel />
 
       {total === 0 ? (
         <div className="mt-6 rounded-lg border border-slate-800 bg-slate-900 p-8 text-center">
