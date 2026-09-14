@@ -1,0 +1,56 @@
+// CaseVault Prisma schema — Phase 1 (Login, User Management & Tamper-Proof Audit Log)
+// See .planning/phases/01-login-user-management-tamper-proof-audit-log/01-RESEARCH.md
+// Pattern 3 for the pooled/direct URL split, and Pattern 2 for the AuditLog
+// append-only enforcement (applied via hand-edited migration SQL, not here).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // pooled, port 6543, ?pgbouncer=true
+  directUrl = env("DIRECT_URL") // unpooled, port 5432 — migrations only
+}
+
+enum Role {
+  POLICE
+  FORENSICS
+  PROSECUTION
+  COURT
+  ADMIN
+}
+
+model User {
+  id           String   @id @default(uuid())
+  fullName     String
+  username     String   @unique
+  role         Role
+  designation  String
+  unit         String
+  badgeId      String
+  isActive     Boolean  @default(true)
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogEntries AuditLog[]
+}
+
+// action stays a plain String (validated by an app-level Zod union), never a
+// native Postgres enum — see RESEARCH.md Alternatives Considered: a native
+// enum would require an ALTER TYPE migration every time Phase 2/3 add a new
+// audit action code, conflicting with D-10's "extensible … without
+// restructuring" requirement.
+model AuditLog {
+  id          BigInt   @id @default(autoincrement())
+  actorId     String
+  actor       User     @relation(fields: [actorId], references: [id])
+  actorRole   String
+  action      String
+  targetType  String
+  targetId    String
+  targetLabel String
+  details     Json?
+  createdAt   DateTime @default(now())
+}

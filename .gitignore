@@ -45,3 +45,7 @@ CLAUDE.md
 # GSD planning docs (local-only)
 .planning/
 .agents/
+
+# TypeScript / Next.js generated
+*.tsbuildinfo
+next-env.d.ts
