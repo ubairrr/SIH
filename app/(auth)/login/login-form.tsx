@@ -10,7 +10,7 @@ import {
   DEMO_ACCOUNTS,
   DEMO_PASSWORD,
 } from "@/app/lib/demo-accounts";
-import { ROLE_LABELS } from "@/app/lib/role-display";
+import { ROLE_BADGE_CLASSES, ROLE_LABELS } from "@/app/lib/role-display";
 
 export function LoginForm({ demoMode }: { demoMode: boolean }) {
   const [state, formAction, pending] = useActionState<LoginState, FormData>(
@@ -99,7 +99,9 @@ export function LoginForm({ demoMode }: { demoMode: boolean }) {
                   }}
                   className="w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-1.5 text-left text-sm text-slate-300 transition hover:border-teal-500 hover:text-white"
                 >
-                  <span className="font-medium">
+                  <span
+                    className={`rounded-full px-2 py-1 text-xs font-medium ${ROLE_BADGE_CLASSES[account.role]}`}
+                  >
                     {ROLE_LABELS[account.role]}
                   </span>{" "}
                   <span className="text-slate-500">

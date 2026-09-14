@@ -5,7 +5,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { Role } from "@prisma/client";
 
-import { createUser, type CreateUserState } from "@/app/actions/users";
+import {
+  createUser,
+  changeRole,
+  resetPassword,
+  deactivateUser,
+  reactivateUser,
+  type CreateUserState,
+} from "@/app/actions/users";
 import {
   createUserSchema,
   type CreateUserInput,
@@ -264,13 +271,330 @@ function CreateUserForm({ onSuccess }: { onSuccess: () => void }) {
   );
 }
 
+function Dialog({
+  children,
+  onClose,
+}: {
+  children: React.ReactNode;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+      <div className="w-full max-w-md rounded-lg border border-slate-800 bg-slate-900 p-6 shadow-xl">
+        {children}
+      </div>
+      {/* Click-outside-to-close overlay, kept behind the panel */}
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={onClose}
+        className="fixed inset-0 -z-10 cursor-default"
+      />
+    </div>
+  );
+}
+
+function ErrorBanner({ message }: { message: string }) {
+  return (
+    <p className="rounded-md bg-red-950 px-3 py-2 text-sm text-red-300">
+      {message}
+    </p>
+  );
+}
+
+function ChangeRoleDialog({
+  user,
+  onClose,
+}: {
+  user: AdminUserRow;
+  onClose: () => void;
+}) {
+  const [newRole, setNewRole] = useState<Role | "">("");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleConfirm = async () => {
+    if (!newRole) return;
+    setPending(true);
+    setError(null);
+    try {
+      const result = await changeRole(user.id, newRole);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      onClose();
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return (
+    <Dialog onClose={onClose}>
+      <p className="break-words text-sm text-slate-200">
+        Change <span className="font-semibold">{user.fullName}</span>&rsquo;s
+        role from {ROLE_LABELS[user.role]} to{" "}
+        {newRole ? ROLE_LABELS[newRole] : "…"}?
+      </p>
+
+      <select
+        value={newRole}
+        onChange={(e) => setNewRole(e.target.value as Role)}
+        className="mt-4 w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none focus:border-teal-400"
+      >
+        <option value="" disabled>
+          Select role
+        </option>
+        {ROLE_OPTIONS.map((role) => (
+          <option key={role} value={role}>
+            {ROLE_LABELS[role]}
+          </option>
+        ))}
+      </select>
+
+      {error && (
+        <div className="mt-4">
+          <ErrorBanner message={error} />
+        </div>
+      )}
+
+      <div className="mt-6 flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={pending}
+          className="rounded-md border border-slate-700 px-3 py-1.5 text-sm text-slate-200 transition hover:bg-slate-800 disabled:opacity-60"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleConfirm}
+          disabled={pending || !newRole || newRole === user.role}
+          className="rounded-md bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-500 disabled:opacity-60"
+        >
+          {pending ? "Saving…" : "Save role"}
+        </button>
+      </div>
+    </Dialog>
+  );
+}
+
+function ResetPasswordDialog({
+  user,
+  onClose,
+}: {
+  user: AdminUserRow;
+  onClose: () => void;
+}) {
+  const [newPassword, setNewPassword] = useState("");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleConfirm = async () => {
+    setPending(true);
+    setError(null);
+    try {
+      const result = await resetPassword(user.id, newPassword);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      onClose();
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return (
+    <Dialog onClose={onClose}>
+      <p className="break-words text-sm text-slate-200">
+        Reset password for{" "}
+        <span className="font-semibold">{user.fullName}</span>? They must use
+        the new password on their next login.
+      </p>
+
+      <input
+        type="text"
+        autoComplete="off"
+        placeholder="New password"
+        value={newPassword}
+        onChange={(e) => setNewPassword(e.target.value)}
+        className="mt-4 w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none focus:border-teal-400"
+      />
+
+      {error && (
+        <div className="mt-4">
+          <ErrorBanner message={error} />
+        </div>
+      )}
+
+      <div className="mt-6 flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={pending}
+          className="rounded-md border border-slate-700 px-3 py-1.5 text-sm text-slate-200 transition hover:bg-slate-800 disabled:opacity-60"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleConfirm}
+          disabled={pending || newPassword.length < 8}
+          className="rounded-md bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-500 disabled:opacity-60"
+        >
+          {pending ? "Saving…" : "Reset password"}
+        </button>
+      </div>
+    </Dialog>
+  );
+}
+
+function ToggleActiveDialog({
+  user,
+  onClose,
+}: {
+  user: AdminUserRow;
+  onClose: () => void;
+}) {
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isDeactivating = user.isActive;
+
+  const handleConfirm = async () => {
+    setPending(true);
+    setError(null);
+    try {
+      const result = isDeactivating
+        ? await deactivateUser(user.id)
+        : await reactivateUser(user.id);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      onClose();
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return (
+    <Dialog onClose={onClose}>
+      <p className="break-words text-sm text-slate-200">
+        {isDeactivating ? (
+          <>
+            Deactivate <span className="font-semibold">{user.fullName}</span>?
+            They will be signed out on their next request and cannot log in
+            until reactivated.
+          </>
+        ) : (
+          <>
+            Reactivate <span className="font-semibold">{user.fullName}</span>?
+            They will be able to log in again immediately.
+          </>
+        )}
+      </p>
+
+      {error && (
+        <div className="mt-4">
+          <ErrorBanner message={error} />
+        </div>
+      )}
+
+      <div className="mt-6 flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={pending}
+          className="rounded-md border border-slate-700 px-3 py-1.5 text-sm text-slate-200 transition hover:bg-slate-800 disabled:opacity-60"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleConfirm}
+          disabled={pending}
+          className={
+            isDeactivating
+              ? "rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500 disabled:opacity-60"
+              : "rounded-md bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-500 disabled:opacity-60"
+          }
+        >
+          {pending
+            ? isDeactivating
+              ? "Deactivating…"
+              : "Reactivating…"
+            : isDeactivating
+              ? "Deactivate account"
+              : "Reactivate account"}
+        </button>
+      </div>
+    </Dialog>
+  );
+}
+
+function RowActions({
+  user,
+  disableLifecycleControls,
+}: {
+  user: AdminUserRow;
+  disableLifecycleControls: boolean;
+}) {
+  const [openDialog, setOpenDialog] = useState<
+    "role" | "reset" | "toggle" | null
+  >(null);
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      <button
+        type="button"
+        disabled={disableLifecycleControls}
+        onClick={() => setOpenDialog("role")}
+        className="rounded-md border border-slate-700 px-2.5 py-1 text-xs text-slate-200 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        Change role
+      </button>
+      <button
+        type="button"
+        onClick={() => setOpenDialog("reset")}
+        className="rounded-md border border-slate-700 px-2.5 py-1 text-xs text-slate-200 transition hover:bg-slate-800"
+      >
+        Reset password
+      </button>
+      <button
+        type="button"
+        disabled={disableLifecycleControls}
+        onClick={() => setOpenDialog("toggle")}
+        className="rounded-md border border-slate-700 px-2.5 py-1 text-xs text-slate-200 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        {user.isActive ? "Deactivate user" : "Reactivate user"}
+      </button>
+
+      {openDialog === "role" && (
+        <ChangeRoleDialog user={user} onClose={() => setOpenDialog(null)} />
+      )}
+      {openDialog === "reset" && (
+        <ResetPasswordDialog user={user} onClose={() => setOpenDialog(null)} />
+      )}
+      {openDialog === "toggle" && (
+        <ToggleActiveDialog user={user} onClose={() => setOpenDialog(null)} />
+      )}
+    </div>
+  );
+}
+
 export function AdminUsersPageClient({
   users,
+  currentUserId,
 }: {
   users: AdminUserRow[];
   currentUserId: string;
 }) {
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const activeAdminCount = users.filter(
+    (u) => u.role === "ADMIN" && u.isActive,
+  ).length;
 
   return (
     <div>
@@ -341,8 +665,16 @@ export function AdminUsersPageClient({
                     {user.isActive ? "Active" : "Inactive"}
                   </span>
                 </td>
-                <td className="px-3 py-2 text-slate-400">
-                  {/* Row lifecycle controls wired up in Task 3 */}
+                <td className="px-3 py-2">
+                  <RowActions
+                    user={user}
+                    disableLifecycleControls={
+                      user.id === currentUserId ||
+                      (user.role === "ADMIN" &&
+                        user.isActive &&
+                        activeAdminCount <= 1)
+                    }
+                  />
                 </td>
               </tr>
             ))}

@@ -18,9 +18,9 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
-      <header className="flex items-center justify-between border-b border-slate-800 bg-slate-900 px-6 py-4">
-        <div className="flex items-center gap-4">
-          <div>
+      <header className="flex flex-wrap items-center justify-between gap-y-2 border-b border-slate-800 bg-slate-900 px-6 py-4">
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="min-w-0">
             <p className="text-sm font-semibold tracking-wide text-white">
               CaseVault — Secure Case Records
             </p>
@@ -29,9 +29,15 @@ export default async function AppLayout({
                 ? ROLE_LABELS.ADMIN
                 : `${ROLE_LABELS[user.role]} — ${user.unit}`}
             </p>
+            <p
+              className="truncate text-xs text-slate-500"
+              title={user.fullName}
+            >
+              {user.fullName}
+            </p>
           </div>
           <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${ROLE_BADGE_CLASSES[user.role]}`}
+            className={`rounded-full px-2 py-1 text-xs font-medium ${ROLE_BADGE_CLASSES[user.role]}`}
           >
             {ROLE_LABELS[user.role]}
           </span>
