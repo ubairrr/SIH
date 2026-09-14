@@ -50,8 +50,39 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Hosted deployment (Vercel + Supabase)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+CaseVault's public demo runs identically on Vercel, backed by Supabase Postgres +
+Storage — switched from the offline stack purely by environment configuration
+(`STORAGE_DRIVER=supabase`, `DATABASE_URL`/`DIRECT_URL` pointing at Supabase),
+never by code branching.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Live demo:** [https://casevault-henna.vercel.app/login](https://casevault-henna.vercel.app/login)
+
+Setup steps:
+
+1. **Supabase** — use (or create) a Supabase project with Postgres and Storage
+   enabled. Create a private Storage bucket named `casevault-files`. From
+   Project Settings → API, note the Project URL and `service_role` key; from
+   Project Settings → Database, note the pooled (`DATABASE_URL`, port 6543,
+   `?pgbouncer=true`) and direct (`DIRECT_URL`, port 5432) connection strings.
+   Apply the committed Prisma migrations against `DIRECT_URL`
+   (`npx prisma migrate deploy`) and seed the 5 demo accounts
+   (`npx prisma db seed`).
+2. **Vercel** — import this GitHub repo (`ubairrr/SIH`) as a new Vercel
+   project. Set these environment variables on the project:
+   - `DATABASE_URL` — Supabase pooled connection string
+   - `DIRECT_URL` — Supabase direct connection string
+   - `SESSION_SECRET` — random value (`openssl rand -base64 32`)
+   - `SUPABASE_URL` — Supabase Project URL
+   - `SUPABASE_SERVICE_ROLE_KEY` — Supabase `service_role` key (server-only,
+     never exposed to the client bundle)
+   - `STORAGE_DRIVER` — `supabase`
+   - `DEMO_MODE` — `true` (shows the click-to-fill Demo Accounts panel on
+     `/login`)
+   
+   Deploy. Vercel auto-deploys on every push to `main` from then on.
+
+See `.env.example` for the full hosted variable template, and
+[Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying)
+for general platform details.
