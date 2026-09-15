@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CaseVault — Upload Document</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; }
+  .font-mono-geist { font-family: 'Geist Mono', ui-monospace, monospace; }
+</style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <header class="flex flex-wrap items-center justify-between gap-y-2 border-b border-slate-200 bg-white px-6 py-4 shadow-sm">
+    <div class="flex min-w-0 items-center gap-4">
+      <div class="min-w-0">
+        <p class="text-sm font-semibold tracking-wide text-slate-900">CaseVault — Secure Case Records</p>
+        <p class="text-xs text-slate-600">Court — Sessions Court</p>
+        <p class="truncate text-xs text-slate-500" title="Justice Arvind Rao">Justice Arvind Rao</p>
+      </div>
+      <span class="rounded-full border border-rose-300 bg-rose-100 px-2 py-1 text-xs font-medium text-rose-800">
+        Court
+      </span>
+    </div>
+
+    <nav class="flex items-center gap-4">
+      <a href="dashboard-court.html" class="text-sm text-slate-600 transition hover:text-slate-900">Dashboard</a>
+      <a href="case-detail-owner.html" class="text-sm text-slate-600 transition hover:text-slate-900">Case Detail</a>
+      <button type="button" class="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-100">
+        Logout
+      </button>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-6 py-8">
+    <div class="mb-6">
+      <p class="font-mono-geist text-xs text-slate-500">KOT/2026/0142</p>
+      <h1 class="text-xl font-semibold text-slate-900">Theft and Criminal Intimidation at Kotwali Market — Documents &amp; Evidence</h1>
+      <p class="text-sm text-slate-600">Current stage: In Court</p>
+    </div>
+
+    <section class="mb-10">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-y-2">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-700">Documents</h2>
+        <button type="button" class="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-slate-700">
+          Upload document
+        </button>
+      </div>
+      <div class="overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50">
+            <tr>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Category</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Filename</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Uploaded By</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Date</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Version</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white">
+            <tr>
+              <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">FIR</span></td>
+              <td class="px-3 py-2 text-slate-800">KOT-2026-0142-FIR.pdf</td>
+              <td class="px-3 py-2 text-slate-800">Ramesh Kulkarni</td>
+              <td class="px-3 py-2 text-slate-600">2026-08-02</td>
+              <td class="px-3 py-2 text-slate-600">v1</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">Witness Statement</span></td>
+              <td class="px-3 py-2 text-slate-800">Vikram Sharma - Complainant Statement.pdf</td>
+              <td class="px-3 py-2 text-slate-800">Ramesh Kulkarni</td>
+              <td class="px-3 py-2 text-slate-600">2026-08-02</td>
+              <td class="px-3 py-2 text-slate-600">v1</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">Investigation Record</span></td>
+              <td class="px-3 py-2 text-slate-800">Case Diary Entry 01.pdf</td>
+              <td class="px-3 py-2 text-slate-800">Ramesh Kulkarni</td>
+              <td class="px-3 py-2 text-slate-600">2026-08-05</td>
+              <td class="px-3 py-2 text-slate-600">v1</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">Charge Sheet</span></td>
+              <td class="px-3 py-2 text-slate-800">Charge Sheet - KOT-2026-0142.pdf</td>
+              <td class="px-3 py-2 text-slate-800">Priya Deshmukh</td>
+              <td class="px-3 py-2 text-slate-600">2026-09-05</td>
+              <td class="px-3 py-2 text-slate-600">v1</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">Court Filing</span></td>
+              <td class="px-3 py-2 text-slate-800">Sessions Court Listing Order.pdf</td>
+              <td class="px-3 py-2 text-slate-800">Justice Arvind Rao</td>
+              <td class="px-3 py-2 text-slate-600">2026-09-10</td>
+              <td class="px-3 py-2 text-slate-600">v1</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">Forensic Report</span></td>
+              <td class="px-3 py-2 text-slate-800">FSL Report - Fingerprint and CCTV Analysis.pdf</td>
+              <td class="px-3 py-2 text-slate-800">Dr. Anjali Menon</td>
+              <td class="px-3 py-2 text-slate-600">2026-08-20</td>
+              <td class="px-3 py-2">
+                <a href="version-history.html" class="text-slate-700 underline decoration-slate-400 underline-offset-2 transition hover:text-slate-900">
+                  v2 (2 versions) — View history
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">Legal Notice</span></td>
+              <td class="px-3 py-2 text-slate-800">Notice to Accused - Rakesh Yadav.pdf</td>
+              <td class="px-3 py-2 text-slate-800">Priya Deshmukh</td>
+              <td class="px-3 py-2 text-slate-600">2026-08-04</td>
+              <td class="px-3 py-2 text-slate-600">v1</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">Judgment</span></td>
+              <td class="px-3 py-2 text-slate-500 italic">Pending — case not yet closed</td>
+              <td class="px-3 py-2 text-slate-400">—</td>
+              <td class="px-3 py-2 text-slate-400">—</td>
+              <td class="px-3 py-2 text-slate-400">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-700">Evidence</h2>
+      <div class="overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50">
+            <tr>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Type</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Filename</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Uploaded By</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Date</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white">
+            <tr>
+              <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">Photo</span></td>
+              <td class="px-3 py-2 text-slate-800">
+                <a href="preview-image.html" class="text-slate-800 underline decoration-slate-400 underline-offset-2 transition hover:text-slate-900">
+                  Shop CCTV Frame - Cash Counter.jpg
+                </a>
+              </td>
+              <td class="px-3 py-2 text-slate-800">Ramesh Kulkarni</td>
+              <td class="px-3 py-2 text-slate-600">2026-08-03</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">Video / CCTV</span></td>
+              <td class="px-3 py-2 text-slate-800">
+                <a href="preview-video.html" class="text-slate-800 underline decoration-slate-400 underline-offset-2 transition hover:text-slate-900">
+                  Kotwali Market CCTV - 2026-08-02 22-14.mp4
+                </a>
+              </td>
+              <td class="px-3 py-2 text-slate-800">Ramesh Kulkarni</td>
+              <td class="px-3 py-2 text-slate-600">2026-08-03</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">Audio</span></td>
+              <td class="px-3 py-2 text-slate-800">Witness Statement Recording - Vikram Sharma.mp3</td>
+              <td class="px-3 py-2 text-slate-800">Ramesh Kulkarni</td>
+              <td class="px-3 py-2 text-slate-600">2026-08-02</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">Forensic Data</span></td>
+              <td class="px-3 py-2 text-slate-800">Fingerprint Scan Dataset - Rakesh Yadav.zip</td>
+              <td class="px-3 py-2 text-slate-800">Dr. Anjali Menon</td>
+              <td class="px-3 py-2 text-slate-600">2026-08-18</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+    <div class="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+      <div class="mb-4 flex items-start justify-between">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-900">Upload document</h2>
+          <p class="text-sm text-slate-500">New version — Forensic Report</p>
+        </div>
+        <button type="button" class="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600" aria-label="Close">
+          &times;
+        </button>
+      </div>
+
+      <form class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1">
+          <label for="category" class="text-sm font-medium text-slate-700">Category</label>
+          <select id="category" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-slate-500">
+            <option>FIR</option>
+            <option>Witness Statement</option>
+            <option>Investigation Record</option>
+            <option>Charge Sheet</option>
+            <option>Court Filing</option>
+            <option selected>Forensic Report</option>
+            <option>Legal Notice</option>
+            <option>Judgment</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for="title" class="text-sm font-medium text-slate-700">Title</label>
+          <input
+            id="title"
+            type="text"
+            value="FSL Report - Fingerprint and CCTV Analysis v3.pdf"
+            class="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-slate-500"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for="description" class="text-sm font-medium text-slate-700">Description</label>
+          <textarea
+            id="description"
+            rows="3"
+            class="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-slate-500"
+          >Supplementary forensic analysis following additional fingerprint comparison.</textarea>
+        </div>
+
+        <div class="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 8.25 12 3.75m0 0L7.5 8.25M12 3.75v13.5" />
+          </svg>
+          <p class="text-sm text-slate-600">Drag and drop or click to browse — PDF, JPG, PNG, MP4, MP3, ZIP up to 100MB</p>
+        </div>
+
+        <div class="mt-2 flex justify-end gap-3">
+          <button type="button" class="rounded-md border border-slate-300 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-100">
+            Cancel
+          </button>
+          <button type="button" class="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700">
+            Upload
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
