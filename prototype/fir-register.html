@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CaseVault — Register FIR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; }
+  .font-mono-geist { font-family: 'Geist Mono', ui-monospace, monospace; }
+</style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <header class="flex flex-wrap items-center justify-between gap-y-2 border-b border-slate-200 bg-white px-6 py-4 shadow-sm">
+    <div class="flex min-w-0 items-center gap-4">
+      <div class="min-w-0">
+        <p class="text-sm font-semibold tracking-wide text-slate-900">CaseVault — Secure Case Records</p>
+        <p class="text-xs text-slate-600">Police — Kotwali PS</p>
+        <p class="truncate text-xs text-slate-500" title="Ramesh Kulkarni">Ramesh Kulkarni</p>
+      </div>
+      <span class="rounded-full border border-blue-300 bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
+        Police
+      </span>
+    </div>
+
+    <nav class="flex items-center gap-4">
+      <a href="dashboard-police.html" class="text-sm text-slate-600 transition hover:text-slate-900">Dashboard</a>
+      <button type="button" class="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-100">
+        Logout
+      </button>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-3xl px-6 py-8">
+    <h1 class="mb-1 text-xl font-semibold text-slate-900">Register FIR</h1>
+    <p class="mb-6 text-sm text-slate-600">Enter the First Information Report details to open a new case.</p>
+
+    <form class="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="flex flex-col gap-1">
+          <label for="fir-number" class="text-sm font-medium text-slate-700">FIR Number</label>
+          <input
+            id="fir-number"
+            type="text"
+            value="KOT/2026/0142"
+            class="rounded-md border border-slate-300 bg-white px-3 py-2 font-mono-geist text-sm text-slate-900 outline-none focus:border-blue-500"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for="incident-date" class="text-sm font-medium text-slate-700">Incident Date</label>
+          <input
+            id="incident-date"
+            type="date"
+            value="2026-08-02"
+            class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500"
+          />
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="title" class="text-sm font-medium text-slate-700">Title</label>
+        <input
+          id="title"
+          type="text"
+          value="Theft and Criminal Intimidation at Kotwali Market"
+          class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="offence" class="text-sm font-medium text-slate-700">Offence / Sections</label>
+        <input
+          id="offence"
+          type="text"
+          value="BNS Section 305(a), BNS Section 351(2)"
+          class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500"
+        />
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="flex flex-col gap-1">
+          <label for="police-station" class="text-sm font-medium text-slate-700">Police Station</label>
+          <input
+            id="police-station"
+            type="text"
+            value="Kotwali PS"
+            class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for="complainant" class="text-sm font-medium text-slate-700">Complainant</label>
+          <input
+            id="complainant"
+            type="text"
+            value="Vikram Sharma"
+            class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500"
+          />
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="accused" class="text-sm font-medium text-slate-700">Accused</label>
+        <input
+          id="accused"
+          type="text"
+          value="Rakesh Yadav"
+          class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="description" class="text-sm font-medium text-slate-700">Description</label>
+        <textarea
+          id="description"
+          rows="4"
+          class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500"
+        >Complainant reported theft of cash and jewellery from his shop at Kotwali Market on the night of 2026-08-02, with the accused allegedly threatening him when confronted the following morning.</textarea>
+      </div>
+
+      <button
+        type="submit"
+        class="mt-2 self-start rounded-md bg-blue-700 px-4 py-2 font-medium text-white transition hover:bg-blue-600 disabled:opacity-60"
+      >
+        Register FIR
+      </button>
+    </form>
+  </main>
+</body>
+</html>
