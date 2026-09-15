@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CaseVault — Search Results</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; }
+  .font-mono-geist { font-family: 'Geist Mono', ui-monospace, monospace; }
+</style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <header class="flex flex-wrap items-center justify-between gap-y-2 border-b border-slate-200 bg-white px-6 py-4 shadow-sm">
+    <div class="flex min-w-0 items-center gap-4">
+      <div class="min-w-0">
+        <p class="text-sm font-semibold tracking-wide text-slate-900">CaseVault — Secure Case Records</p>
+        <p class="text-xs text-slate-600">Police — Kotwali PS</p>
+        <p class="truncate text-xs text-slate-500" title="Ramesh Kulkarni">Ramesh Kulkarni</p>
+      </div>
+      <span class="rounded-full border border-blue-300 bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
+        Police
+      </span>
+    </div>
+
+    <nav class="flex items-center gap-4">
+      <a href="dashboard-police.html" class="text-sm text-slate-600 transition hover:text-slate-900">Dashboard</a>
+      <button type="button" class="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-100">
+        Logout
+      </button>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-6 py-8">
+    <h1 class="mb-6 text-xl font-semibold text-slate-900">Search &amp; Filter Cases</h1>
+
+    <form class="mb-6 space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-slate-700" for="search-query">FIR Number / Title</label>
+        <input
+          id="search-query"
+          type="text"
+          value="Kotwali"
+          class="w-full max-w-md rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500"
+        />
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-slate-700" for="filter-stage">Stage</label>
+          <select id="filter-stage" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500">
+            <option selected>All Stages</option>
+            <option>FIR Registered</option>
+            <option>Under Investigation</option>
+            <option>Charge Sheet Filed</option>
+            <option>In Court</option>
+            <option>Closed/Judgment</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-slate-700" for="filter-date-from">Date From</label>
+          <input
+            id="filter-date-from"
+            type="date"
+            value="2026-06-01"
+            class="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-slate-700" for="filter-date-to">Date To</label>
+          <input
+            id="filter-date-to"
+            type="date"
+            value="2026-09-15"
+            class="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-slate-700" for="filter-category">Document Category</label>
+          <select id="filter-category" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500">
+            <option selected>All Categories</option>
+            <option>FIR</option>
+            <option>Witness Statement</option>
+            <option>Investigation Record</option>
+            <option>Charge Sheet</option>
+            <option>Court Filing</option>
+            <option>Forensic Report</option>
+            <option>Legal Notice</option>
+            <option>Judgment</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="button" class="rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-600">
+        Search
+      </button>
+    </form>
+
+    <p class="mb-3 text-xs text-slate-500">
+      Showing results visible to Police — Kotwali PS. Cases outside your access are never shown or counted.
+    </p>
+
+    <div class="overflow-x-auto rounded-lg border border-slate-200">
+      <table class="min-w-full divide-y divide-slate-200 text-sm">
+        <thead class="bg-slate-50">
+          <tr>
+            <th class="px-3 py-2 text-left font-semibold text-slate-700">FIR Number</th>
+            <th class="px-3 py-2 text-left font-semibold text-slate-700">Title</th>
+            <th class="px-3 py-2 text-left font-semibold text-slate-700">Stage</th>
+            <th class="px-3 py-2 text-left font-semibold text-slate-700">Access</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 bg-white">
+          <tr>
+            <td class="px-3 py-2 font-mono-geist text-xs text-slate-800">NGP/2026/0101</td>
+            <td class="px-3 py-2 text-slate-800">Cheating and Forgery</td>
+            <td class="px-3 py-2 text-slate-800">FIR Registered</td>
+            <td class="px-3 py-2"><span class="rounded-full border border-emerald-300 bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-800">Owned</span></td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 font-mono-geist text-xs text-slate-800">KOT/2026/0089</td>
+            <td class="px-3 py-2 text-slate-800">Cyber Fraud — Fake Investment Scheme</td>
+            <td class="px-3 py-2 text-slate-800">Under Investigation</td>
+            <td class="px-3 py-2"><span class="rounded-full border border-emerald-300 bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-800">Owned</span></td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 font-mono-geist text-xs text-slate-800">RJN/2026/0033</td>
+            <td class="px-3 py-2 text-slate-800">Assault Causing Grievous Hurt</td>
+            <td class="px-3 py-2 text-slate-800">Charge Sheet Filed</td>
+            <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">Read-only</span></td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 font-mono-geist text-xs text-slate-800">KOT/2026/0142</td>
+            <td class="px-3 py-2 text-slate-800">Theft and Criminal Intimidation at Kotwali Market</td>
+            <td class="px-3 py-2 text-slate-800">In Court</td>
+            <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">Read-only</span></td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 font-mono-geist text-xs text-slate-800">MUM/2026/0217</td>
+            <td class="px-3 py-2 text-slate-800">Narcotics Possession</td>
+            <td class="px-3 py-2 text-slate-800">In Court</td>
+            <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">Read-only</span></td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 font-mono-geist text-xs text-slate-800">PUN/2026/0064</td>
+            <td class="px-3 py-2 text-slate-800">Residential Burglary</td>
+            <td class="px-3 py-2 text-slate-800">Closed/Judgment</td>
+            <td class="px-3 py-2"><span class="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">Read-only</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>
