@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CaseVault — Screen Gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; }
+  .font-mono-geist { font-family: 'Geist Mono', ui-monospace, monospace; }
+</style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <header class="border-b border-slate-800 bg-slate-900 px-6 py-6">
+    <p class="text-lg font-semibold tracking-wide text-white">CaseVault — Secure Case Records</p>
+    <p class="text-sm text-slate-400">Screen Gallery — Pitch Prototype</p>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-6 py-8">
+    <p class="mb-8 max-w-3xl rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+      This gallery is a loose, non-binding reference for Phases 2-4 — it sets layout and flow direction, but those phases' UI specs may deviate where backend realities require it.
+    </p>
+
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+
+      <a href="dashboard-police.html" class="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-400 hover:shadow-md">
+        <h2 class="text-base font-semibold text-slate-900">Police Dashboard</h2>
+        <p class="mt-1 text-sm text-slate-600">Police dashboard — cases owned and previously held</p>
+      </a>
+
+      <a href="dashboard-forensics.html" class="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-teal-400 hover:shadow-md">
+        <h2 class="text-base font-semibold text-slate-900">Forensics Dashboard</h2>
+        <p class="mt-1 text-sm text-slate-600">Forensics dashboard — active and past contributions</p>
+      </a>
+
+      <a href="dashboard-prosecution.html" class="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-amber-400 hover:shadow-md">
+        <h2 class="text-base font-semibold text-slate-900">Prosecution Dashboard</h2>
+        <p class="mt-1 text-sm text-slate-600">Prosecution dashboard — charge-sheet stage cases</p>
+      </a>
+
+      <a href="dashboard-court.html" class="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-rose-400 hover:shadow-md">
+        <h2 class="text-base font-semibold text-slate-900">Court Dashboard</h2>
+        <p class="mt-1 text-sm text-slate-600">Court dashboard — trial and closed cases</p>
+      </a>
+
+      <a href="fir-register.html" class="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-400 hover:shadow-md">
+        <h2 class="text-base font-semibold text-slate-900">Register FIR</h2>
+        <p class="mt-1 text-sm text-slate-600">Register FIR — new case intake form</p>
+      </a>
+
+      <a href="case-detail-owner.html" class="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-400 hover:shadow-md">
+        <h2 class="text-base font-semibold text-slate-900">Case Detail — Owner View</h2>
+        <p class="mt-1 text-sm text-slate-600">Case detail — owning department view, can act</p>
+      </a>
+
+      <a href="case-detail-readonly.html" class="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-400 hover:shadow-md">
+        <h2 class="text-base font-semibold text-slate-900">Case Detail — Read-only</h2>
+        <p class="mt-1 text-sm text-slate-600">Case detail — read-only, previously held</p>
+      </a>
+
+      <a href="documents-evidence.html" class="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-400 hover:shadow-md">
+        <h2 class="text-base font-semibold text-slate-900">Documents &amp; Evidence</h2>
+        <p class="mt-1 text-sm text-slate-600">Documents &amp; evidence — grouped by category</p>
+      </a>
+
+      <a href="upload-dialog.html" class="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-400 hover:shadow-md">
+        <h2 class="text-base font-semibold text-slate-900">Upload Document (dialog)</h2>
+        <p class="mt-1 text-sm text-slate-600">Upload document — dialog open</p>
+      </a>
+
+      <a href="version-history.html" class="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-400 hover:shadow-md">
+        <h2 class="text-base font-semibold text-slate-900">Version History</h2>
+        <p class="mt-1 text-sm text-slate-600">Document version history — older versions remain viewable</p>
+      </a>
+
+      <a href="preview-pdf.html" class="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-400 hover:shadow-md">
+        <h2 class="text-base font-semibold text-slate-900">Preview — PDF</h2>
+        <p class="mt-1 text-sm text-slate-600">Inline PDF preview</p>
+      </a>
+
+      <a href="preview-image.html" class="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-400 hover:shadow-md">
+        <h2 class="text-base font-semibold text-slate-900">Preview — Image</h2>
+        <p class="mt-1 text-sm text-slate-600">Inline image preview</p>
+      </a>
+
+      <a href="preview-video.html" class="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-400 hover:shadow-md">
+        <h2 class="text-base font-semibold text-slate-900">Preview — Video</h2>
+        <p class="mt-1 text-sm text-slate-600">Inline CCTV video preview</p>
+      </a>
+
+      <a href="change-log.html" class="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-400 hover:shadow-md">
+        <h2 class="text-base font-semibold text-slate-900">Change Log</h2>
+        <p class="mt-1 text-sm text-slate-600">Per-case change log — forensic action codes</p>
+      </a>
+
+      <a href="search-results.html" class="block rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-400 hover:shadow-md">
+        <h2 class="text-base font-semibold text-slate-900">Search Results</h2>
+        <p class="mt-1 text-sm text-slate-600">Search &amp; filter results, scoped to viewer access</p>
+      </a>
+
+    </div>
+  </main>
+</body>
+</html>
