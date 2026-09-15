@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CaseVault — Change Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; }
+  .font-mono-geist { font-family: 'Geist Mono', ui-monospace, monospace; }
+</style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <header class="flex flex-wrap items-center justify-between gap-y-2 border-b border-slate-200 bg-white px-6 py-4 shadow-sm">
+    <div class="flex min-w-0 items-center gap-4">
+      <div class="min-w-0">
+        <p class="text-sm font-semibold tracking-wide text-slate-900">CaseVault — Secure Case Records</p>
+        <p class="text-xs text-slate-600">Court — Sessions Court</p>
+        <p class="truncate text-xs text-slate-500" title="Justice Arvind Rao">Justice Arvind Rao</p>
+      </div>
+      <span class="rounded-full border border-rose-300 bg-rose-100 px-2 py-1 text-xs font-medium text-rose-800">
+        Court
+      </span>
+    </div>
+
+    <nav class="flex items-center gap-4">
+      <a href="case-detail-owner.html" class="text-sm text-slate-600 transition hover:text-slate-900">Case Detail</a>
+      <a href="dashboard-court.html" class="text-sm text-slate-600 transition hover:text-slate-900">Dashboard</a>
+      <button type="button" class="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-100">
+        Logout
+      </button>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-6 py-8">
+    <h1 class="mb-1 text-xl font-semibold text-slate-900">Change Log — FIR KOT/2026/0142</h1>
+    <p class="mb-6 text-sm text-slate-600">Theft and Criminal Intimidation at Kotwali Market — full modification history for this case, newest actions at the bottom, exactly as recorded in the append-only audit log.</p>
+
+    <div class="overflow-x-auto rounded-lg border border-slate-200">
+      <table class="min-w-full divide-y divide-slate-200 text-sm">
+        <thead class="bg-slate-50">
+          <tr>
+            <th class="px-3 py-2 text-left font-semibold text-slate-700">Time</th>
+            <th class="px-3 py-2 text-left font-semibold text-slate-700">Actor</th>
+            <th class="px-3 py-2 text-left font-semibold text-slate-700">Role</th>
+            <th class="px-3 py-2 text-left font-semibold text-slate-700">Action</th>
+            <th class="px-3 py-2 text-left font-semibold text-slate-700">Target</th>
+            <th class="px-3 py-2 text-left font-semibold text-slate-700">Details</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 bg-white">
+          <tr>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">2026-08-02 09:14</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-800" title="Ramesh Kulkarni">Ramesh Kulkarni</td>
+            <td class="px-3 py-2 text-slate-700">Police</td>
+            <td class="px-3 py-2 font-mono text-xs text-slate-800">CASE_REGISTERED</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-700" title="KOT/2026/0142">KOT/2026/0142</td>
+            <td class="max-w-xs px-3 py-2">
+              <div class="max-h-32 overflow-y-auto whitespace-pre-wrap break-all font-mono text-xs text-slate-500">FIR registered at Kotwali PS</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">2026-08-02 09:20</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-800" title="Ramesh Kulkarni">Ramesh Kulkarni</td>
+            <td class="px-3 py-2 text-slate-700">Police</td>
+            <td class="px-3 py-2 font-mono text-xs text-slate-800">DOCUMENT_UPLOADED</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-700" title="KOT-2026-0142-FIR.pdf">KOT-2026-0142-FIR.pdf</td>
+            <td class="max-w-xs px-3 py-2">
+              <div class="max-h-32 overflow-y-auto whitespace-pre-wrap break-all font-mono text-xs text-slate-500">FIR document uploaded</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">2026-08-03 10:00</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-800" title="Ramesh Kulkarni">Ramesh Kulkarni</td>
+            <td class="px-3 py-2 text-slate-700">Police</td>
+            <td class="px-3 py-2 font-mono text-xs text-slate-800">STAGE_ADVANCED</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-700" title="KOT/2026/0142">KOT/2026/0142</td>
+            <td class="max-w-xs px-3 py-2">
+              <div class="max-h-32 overflow-y-auto whitespace-pre-wrap break-all font-mono text-xs text-slate-500">FIR Registered -> Under Investigation</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">2026-08-18 16:40</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-800" title="Dr. Anjali Menon">Dr. Anjali Menon</td>
+            <td class="px-3 py-2 text-slate-700">Forensics</td>
+            <td class="px-3 py-2 font-mono text-xs text-slate-800">DOCUMENT_UPLOADED</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-700" title="FSL Report - Fingerprint and CCTV Analysis.pdf (v1)">FSL Report - Fingerprint and CCTV Analysis.pdf (v1)</td>
+            <td class="max-w-xs px-3 py-2">
+              <div class="max-h-32 overflow-y-auto whitespace-pre-wrap break-all font-mono text-xs text-slate-500">Initial forensic report uploaded</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">2026-08-20 11:05</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-800" title="Dr. Anjali Menon">Dr. Anjali Menon</td>
+            <td class="px-3 py-2 text-slate-700">Forensics</td>
+            <td class="px-3 py-2 font-mono text-xs text-slate-800">DOCUMENT_VERSION_UPLOADED</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-700" title="FSL Report - Fingerprint and CCTV Analysis.pdf (v2)">FSL Report - Fingerprint and CCTV Analysis.pdf (v2)</td>
+            <td class="max-w-xs px-3 py-2">
+              <div class="max-h-32 overflow-y-auto whitespace-pre-wrap break-all font-mono text-xs text-slate-500">Supplementary fingerprint match added</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">2026-09-05 14:30</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-800" title="Priya Deshmukh">Priya Deshmukh</td>
+            <td class="px-3 py-2 text-slate-700">Prosecution</td>
+            <td class="px-3 py-2 font-mono text-xs text-slate-800">STAGE_ADVANCED</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-700" title="KOT/2026/0142">KOT/2026/0142</td>
+            <td class="max-w-xs px-3 py-2">
+              <div class="max-h-32 overflow-y-auto whitespace-pre-wrap break-all font-mono text-xs text-slate-500">Under Investigation -> Charge Sheet Filed</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">2026-09-05 14:35</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-800" title="Priya Deshmukh">Priya Deshmukh</td>
+            <td class="px-3 py-2 text-slate-700">Prosecution</td>
+            <td class="px-3 py-2 font-mono text-xs text-slate-800">DOCUMENT_UPLOADED</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-700" title="Charge Sheet - KOT-2026-0142.pdf">Charge Sheet - KOT-2026-0142.pdf</td>
+            <td class="max-w-xs px-3 py-2">
+              <div class="max-h-32 overflow-y-auto whitespace-pre-wrap break-all font-mono text-xs text-slate-500">Charge sheet filed</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">2026-09-10 09:00</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-800" title="Justice Arvind Rao">Justice Arvind Rao</td>
+            <td class="px-3 py-2 text-slate-700">Court</td>
+            <td class="px-3 py-2 font-mono text-xs text-slate-800">STAGE_ADVANCED</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-700" title="KOT/2026/0142">KOT/2026/0142</td>
+            <td class="max-w-xs px-3 py-2">
+              <div class="max-h-32 overflow-y-auto whitespace-pre-wrap break-all font-mono text-xs text-slate-500">Charge Sheet Filed -> In Court</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>
