@@ -11,6 +11,7 @@ import {
   advanceStageSchema,
   closeCaseSchema,
   reopenCaseSchema,
+  updateCaseSchema,
 } from "@/app/lib/validation/case";
 import {
   assertForwardOneStep,
@@ -315,5 +316,109 @@ export async function reopenCase(
 
   revalidatePath("/dashboard");
   revalidatePath(`/cases/${caseId}`);
+  return { success: true };
+}
+
+export type UpdateCaseState =
+  | {
+      error?: string;
+      fieldErrors?: Partial<
+        Record<keyof typeof updateCaseSchema.shape, string>
+      >;
+      success?: boolean;
+    }
+  | undefined;
+
+const UPDATE_CASE_FIELDS = [
+  "title",
+  "offenceSections",
+  "incidentDate",
+  "policeStation",
+  "complainant",
+  "accused",
+  "description",
+] as const;
+
+// D-02/D-18: every department can edit and update any case until it is
+// Closed/Judgment. Each edit is logged as CASE_UPDATED with the changed
+// fields (old -> new) in details, mirroring changeRole's { oldRole, newRole }
+// shape but generalized to N fields.
+export async function updateCaseDetails(
+  _prevState: UpdateCaseState,
+  formData: FormData,
+): Promise<UpdateCaseState> {
+  const actor = await authorize();
+
+  const parsed = updateCaseSchema.safeParse({
+    caseId: formData.get("caseId"),
+    title: formData.get("title"),
+    offenceSections: formData.get("offenceSections"),
+    incidentDate: formData.get("incidentDate"),
+    policeStation: formData.get("policeStation"),
+    complainant: formData.get("complainant"),
+    accused: formData.get("accused"),
+    description: formData.get("description"),
+  });
+
+  if (!parsed.success) {
+    return {
+      error: "Couldn't save the case — check your connection and try again.",
+    };
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const target = await tx.case.findUniqueOrThrow({
+        where: { id: parsed.data.caseId },
+      });
+
+      assertNotClosed(target.stage);
+
+      const changed: Record<string, { old: string; new: string }> = {};
+      for (const field of UPDATE_CASE_FIELDS) {
+        const oldValue =
+          field === "incidentDate"
+            ? target.incidentDate.toISOString()
+            : target[field];
+        const newValue =
+          field === "incidentDate"
+            ? parsed.data.incidentDate.toISOString()
+            : parsed.data[field];
+        if (oldValue !== newValue) {
+          changed[field] = { old: oldValue, new: newValue };
+        }
+      }
+
+      const updated = await tx.case.update({
+        where: { id: target.id },
+        data: {
+          title: parsed.data.title,
+          offenceSections: parsed.data.offenceSections,
+          incidentDate: parsed.data.incidentDate,
+          policeStation: parsed.data.policeStation,
+          complainant: parsed.data.complainant,
+          accused: parsed.data.accused,
+          description: parsed.data.description,
+        },
+      });
+
+      await writeAuditLog(tx, {
+        actorId: actor.id,
+        actorRole: actor.role,
+        action: "CASE_UPDATED",
+        targetType: "Case",
+        targetId: updated.id,
+        targetLabel: updated.firNumber,
+        details: { changed },
+      });
+    });
+  } catch (err) {
+    if (err instanceof Error) {
+      return { error: err.message };
+    }
+    throw err;
+  }
+
+  revalidatePath(`/cases/${parsed.data.caseId}`);
   return { success: true };
 }
