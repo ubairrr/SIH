@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:offline": "docker compose up -d --wait && bash -c 'set -a; source .env.local; set +a; npx prisma migrate deploy && npx prisma db seed && npx next dev'",
-    "build": "next build",
+    "build": "prisma generate && next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
     "test": "node --import tsx --test 'app/**/*.test.ts'",
