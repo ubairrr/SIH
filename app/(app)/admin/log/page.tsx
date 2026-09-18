@@ -34,69 +34,69 @@ export default async function AdminLogPage({
 
   return (
     <div>
-      <h1 className="text-lg font-semibold text-white">Change Log</h1>
+      <h1 className="text-lg font-semibold text-slate-900">Change Log</h1>
 
       <TamperTestPanel />
 
       {total === 0 ? (
-        <div className="mt-6 rounded-lg border border-slate-800 bg-slate-900 p-8 text-center">
-          <p className="text-slate-200">No changes recorded yet.</p>
-          <p className="mt-1 text-sm text-slate-400">
+        <div className="mt-6 rounded-lg border border-slate-200 bg-white p-8 text-center">
+          <p className="text-slate-900">No changes recorded yet.</p>
+          <p className="mt-1 text-sm text-slate-500">
             Actions like creating or deactivating a user will appear here.
           </p>
         </div>
       ) : (
         <>
-          <div className="mt-6 overflow-x-auto rounded-lg border border-slate-800">
-            <table className="min-w-full divide-y divide-slate-800 text-sm">
-              <thead className="bg-slate-900">
+          <div className="mt-6 overflow-x-auto rounded-lg border border-slate-200">
+            <table className="min-w-full divide-y divide-slate-200 text-sm">
+              <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-300">
+                  <th className="px-3 py-2 text-left font-semibold text-slate-700">
                     Time
                   </th>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-300">
+                  <th className="px-3 py-2 text-left font-semibold text-slate-700">
                     Actor
                   </th>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-300">
+                  <th className="px-3 py-2 text-left font-semibold text-slate-700">
                     Role
                   </th>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-300">
+                  <th className="px-3 py-2 text-left font-semibold text-slate-700">
                     Action
                   </th>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-300">
+                  <th className="px-3 py-2 text-left font-semibold text-slate-700">
                     Target
                   </th>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-300">
+                  <th className="px-3 py-2 text-left font-semibold text-slate-700">
                     Details
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-200 bg-white">
                 {rows.map((row) => (
                   <tr key={row.id.toString()}>
-                    <td className="whitespace-nowrap px-3 py-2 text-slate-300">
+                    <td className="whitespace-nowrap px-3 py-2 text-slate-700">
                       {row.createdAt.toLocaleString()}
                     </td>
                     <td
-                      className="max-w-[160px] truncate px-3 py-2 text-slate-100"
+                      className="max-w-[160px] truncate px-3 py-2 text-slate-900"
                       title={row.actor.fullName}
                     >
                       {row.actor.fullName}
                     </td>
-                    <td className="px-3 py-2 text-slate-300">
+                    <td className="px-3 py-2 text-slate-700">
                       {row.actorRole}
                     </td>
-                    <td className="px-3 py-2 font-mono text-xs text-slate-200">
+                    <td className="px-3 py-2 font-mono text-xs text-slate-700">
                       {row.action}
                     </td>
                     <td
-                      className="max-w-[160px] truncate px-3 py-2 text-slate-300"
+                      className="max-w-[160px] truncate px-3 py-2 text-slate-700"
                       title={row.targetLabel || undefined}
                     >
                       {row.targetLabel || "—"}
                     </td>
                     <td className="max-w-xs px-3 py-2">
-                      <div className="max-h-32 overflow-y-auto whitespace-pre-wrap break-all font-mono text-xs text-slate-400">
+                      <div className="max-h-32 overflow-y-auto whitespace-pre-wrap break-all font-mono text-xs text-slate-500">
                         {formatDetails(row.details)}
                       </div>
                     </td>

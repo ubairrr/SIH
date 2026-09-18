@@ -28,12 +28,12 @@ export function PaginationControls({
   }
 
   return (
-    <div className="mt-4 flex items-center justify-between text-sm text-slate-300">
+    <div className="mt-4 flex items-center justify-between text-sm text-slate-700">
       <button
         type="button"
         onClick={() => goTo(page - 1)}
         disabled={isPending || page <= 1}
-        className="rounded-md border border-slate-700 px-3 py-1 disabled:opacity-50"
+        className="rounded-md border border-slate-300 px-3 py-1 transition hover:bg-slate-100 disabled:opacity-50"
       >
         ← Previous
       </button>
@@ -44,7 +44,7 @@ export function PaginationControls({
         type="button"
         onClick={() => goTo(page + 1)}
         disabled={isPending || page >= totalPages}
-        className="rounded-md border border-slate-700 px-3 py-1 disabled:opacity-50"
+        className="rounded-md border border-slate-300 px-3 py-1 transition hover:bg-slate-100 disabled:opacity-50"
       >
         Next →
       </button>

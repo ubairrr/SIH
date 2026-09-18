@@ -30,8 +30,8 @@ export function TamperTestPanel() {
   const emptyLog = result !== null && result.ranAgainstRow === null;
 
   return (
-    <div className="mt-4 rounded-lg border border-slate-800 bg-slate-900 p-6">
-      <p className="text-sm text-slate-300">
+    <div className="mt-4 rounded-lg border border-slate-200 bg-white p-6">
+      <p className="text-sm text-slate-700">
         Attempts a live UPDATE and DELETE against the most recent audit log
         row and shows the database&apos;s rejection.
       </p>
@@ -40,23 +40,23 @@ export function TamperTestPanel() {
         type="button"
         onClick={runTest}
         disabled={isPending}
-        className="mt-3 rounded-md bg-teal-600 px-4 py-2 text-sm font-semibold text-white outline-none focus:border-teal-400 disabled:opacity-50"
+        className="mt-3 rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white outline-none transition hover:bg-blue-600 focus:border-blue-500 disabled:opacity-50"
       >
         {isPending ? "Testing…" : "Test tamper-protection"}
       </button>
 
       {rejected && (
-        <div className="mt-4 rounded-md border border-slate-700 bg-slate-950 p-4">
-          <p className="font-semibold text-slate-100">
+        <div className="mt-4 rounded-md border border-slate-300 bg-slate-50 p-4">
+          <p className="font-semibold text-slate-900">
             Tamper attempt rejected
           </p>
-          <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-xs text-slate-400">
+          <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-xs text-slate-500">
             {result?.updateError}
           </pre>
-          <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-xs text-slate-400">
+          <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-xs text-slate-500">
             {result?.deleteError}
           </pre>
-          <p className="mt-2 text-sm text-emerald-300">Row unchanged</p>
+          <p className="mt-2 text-sm text-emerald-700">Row unchanged</p>
           <p className="mt-3 text-xs text-slate-500">
             This demonstrates the database rejecting these two statements
             through the app&apos;s own connection.
@@ -65,17 +65,17 @@ export function TamperTestPanel() {
       )}
 
       {tamperSucceeded && (
-        <div className="mt-4 rounded-md border border-red-800 bg-red-950 p-4">
-          <p className="font-semibold text-red-300">
+        <div className="mt-4 rounded-md border border-red-300 bg-red-50 p-4">
+          <p className="font-semibold text-red-800">
             Tamper protection NOT active
           </p>
           {result?.updateError && (
-            <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-xs text-slate-400">
+            <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-xs text-slate-500">
               {result.updateError}
             </pre>
           )}
           {result?.deleteError && (
-            <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-xs text-slate-400">
+            <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-xs text-slate-500">
               {result.deleteError}
             </pre>
           )}
@@ -83,7 +83,7 @@ export function TamperTestPanel() {
       )}
 
       {emptyLog && (
-        <p className="mt-4 text-sm text-slate-400">
+        <p className="mt-4 text-sm text-slate-500">
           No audit log rows exist yet — perform an action (e.g. create a
           user), then try again.
         </p>
