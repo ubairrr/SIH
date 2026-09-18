@@ -15,6 +15,7 @@ import {
 } from "@/app/lib/validation/case";
 import {
   assertForwardOneStep,
+  assertAdvanceNotClose,
   assertStageOwner,
   assertNotClosed,
   assertReopenAllowed,
@@ -57,6 +58,7 @@ export async function registerFir(
   if (!parsed.success) {
     return {
       error:
+        parsed.error.issues[0]?.message ??
         "Couldn't save the case — check your connection and try again.",
     };
   }
@@ -139,7 +141,7 @@ export async function advanceStage(
       if (!nextStage) {
         throw new Error("This case has no further stage to advance to.");
       }
-      assertForwardOneStep(current.stage, nextStage);
+      assertAdvanceNotClose(current, nextStage);
 
       const updated = await tx.case.update({
         where: { id: current.id },
@@ -205,6 +207,14 @@ export async function closeCase(
       });
       const nextStage = nextStageOf(current.stage);
 
+      // D-07 enforced here, not only in the UI: closeCase is the only
+      // legal path to CLOSED_JUDGMENT. A direct Server Action call from
+      // any stage other than IN_COURT is rejected before any write.
+      if (current.stage !== "IN_COURT") {
+        throw new Error(
+          "Only a case currently at In Court can be closed. Use advanceStage to progress through earlier stages.",
+        );
+      }
       assertNotClosed(current.stage);
       assertStageOwner(actor.role, current.stage);
       if (!nextStage) {
@@ -362,7 +372,9 @@ export async function updateCaseDetails(
 
   if (!parsed.success) {
     return {
-      error: "Couldn't save the case — check your connection and try again.",
+      error:
+        parsed.error.issues[0]?.message ??
+        "Couldn't save the case — check your connection and try again.",
     };
   }
 

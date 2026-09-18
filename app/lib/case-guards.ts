@@ -45,6 +45,29 @@ export function assertForwardOneStep(current: Stage, next: Stage): void {
 }
 
 /**
+ * Use this instead of assertForwardOneStep in advanceStage. Rejects the same
+ * illegal moves as assertForwardOneStep AND additionally rejects any attempt
+ * to advance a case to CLOSED_JUDGMENT via advanceStage — that transition
+ * requires a verdict and must go through closeCase.
+ *
+ * The `requestedNext` argument must be chosen by the caller independently of
+ * current.stage (i.e. it must NOT be derived by calling nextStageOf(current)
+ * at the same call site) to avoid the tautological-guard failure mode.
+ */
+export function assertAdvanceNotClose(
+  current: { stage: Stage },
+  requestedNext: Stage | null,
+): void {
+  if (requestedNext === "CLOSED_JUDGMENT") {
+    throw new Error(
+      "Use closeCase() to reach CLOSED_JUDGMENT — advanceStage cannot skip the verdict requirement.",
+    );
+  }
+  // Delegates forward-one-step validation to the canonical guard.
+  assertForwardOneStep(current.stage, requestedNext as Stage);
+}
+
+/**
  * Rejects a stage move attempted by a role other than the department that
  * owns the current stage (Admin can always act, D-04).
  */
