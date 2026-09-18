@@ -92,7 +92,13 @@ export default async function CaseDetailPage({
           Edit Case Details
         </h2>
         <div className="mt-4">
-          <EditCaseForm kase={kase} />
+          {kase.stage === "CLOSED_JUDGMENT" ? (
+            <p className="text-sm text-slate-500">
+              This case is closed and can no longer be edited.
+            </p>
+          ) : (
+            <EditCaseForm kase={kase} />
+          )}
         </div>
       </div>
     </div>
