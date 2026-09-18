@@ -1,14 +1,28 @@
-import type { Role } from "@prisma/client";
+import type { Role, Stage } from "@prisma/client";
 
-// D-15: per-role badge colors — Police blue, Forensics teal, Prosecution
-// amber, Court maroon, Admin slate.
+// 02-UI-SPEC.md Color section: per-role badge colors re-tuned for the light
+// theme (replaces Phase 1's dark /60-opacity classes).
 export const ROLE_BADGE_CLASSES: Record<Role, string> = {
-  POLICE: "bg-blue-900/60 text-blue-200 border border-blue-700",
-  FORENSICS: "bg-teal-900/60 text-teal-200 border border-teal-700",
-  PROSECUTION: "bg-amber-900/60 text-amber-200 border border-amber-700",
-  COURT: "bg-rose-950/60 text-rose-200 border border-rose-800",
-  ADMIN: "bg-slate-700/60 text-slate-200 border border-slate-500",
+  POLICE: "border border-blue-300 bg-blue-100 text-blue-800",
+  FORENSICS: "border border-teal-300 bg-teal-100 text-teal-800",
+  PROSECUTION: "border border-amber-300 bg-amber-100 text-amber-800",
+  COURT: "border border-rose-300 bg-rose-100 text-rose-800",
+  ADMIN: "border border-slate-300 bg-slate-100 text-slate-700",
 };
+
+// 02-UI-SPEC.md: stage names, indicators not access gates (Model Change).
+export const STAGE_LABELS: Record<Stage, string> = {
+  FIR_REGISTERED: "FIR Registered",
+  UNDER_INVESTIGATION: "Under Investigation",
+  CHARGE_SHEET_FILED: "Charge Sheet Filed",
+  IN_COURT: "In Court",
+  CLOSED_JUDGMENT: "Closed / Judgment",
+};
+
+// 02-UI-SPEC.md "Stage/queue label badge" — one neutral class string reused
+// for every stage, no per-stage hue.
+export const STAGE_BADGE_CLASS =
+  "rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700";
 
 export const ROLE_LABELS: Record<Role, string> = {
   POLICE: "Police",
