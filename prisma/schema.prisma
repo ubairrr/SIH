@@ -35,6 +35,66 @@ model User {
   updatedAt    DateTime @updatedAt
 
   auditLogEntries AuditLog[]
+  registeredCases Case[]
+  stageMoves      StageHistory[]
+}
+
+// D-06 stage order: FIR_REGISTERED -> UNDER_INVESTIGATION -> CHARGE_SHEET_FILED
+// -> IN_COURT -> CLOSED_JUDGMENT. Stages are indicators of real-world case
+// progress, not access gates (02-CONTEXT.md Model Change) — every department
+// can view/edit any open case regardless of stage.
+enum Stage {
+  FIR_REGISTERED
+  UNDER_INVESTIGATION
+  CHARGE_SHEET_FILED
+  IN_COURT
+  CLOSED_JUDGMENT
+}
+
+// D-07: fixed verdict list recorded when a case closes (IN_COURT -> CLOSED_JUDGMENT).
+enum Verdict {
+  CONVICTED
+  ACQUITTED
+  DISCHARGED
+  COMPOUNDED
+}
+
+// D-14/D-15/D-16/D-17: FIR fields are free text except firNumber, which is
+// manually typed by the officer and must be DB-unique.
+model Case {
+  id              String    @id @default(uuid())
+  firNumber       String    @unique
+  title           String
+  offenceSections String
+  incidentDate    DateTime
+  policeStation   String
+  complainant     String
+  accused         String
+  description     String
+  stage           Stage     @default(FIR_REGISTERED)
+  verdict         Verdict?
+  judgmentSummary String?
+  registeredById  String
+  registeredBy    User      @relation(fields: [registeredById], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  stageHistory StageHistory[]
+}
+
+// D-11: every stage move (register/advance/close/reopen) writes one row here
+// in the same transaction as the mutation and the AuditLog entry.
+model StageHistory {
+  id        String   @id @default(uuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id])
+  fromStage Stage?
+  toStage   Stage
+  actorId   String
+  actor     User     @relation(fields: [actorId], references: [id])
+  actorRole Role
+  remark    String?
+  createdAt DateTime @default(now())
 }
 
 // action stays a plain String (validated by an app-level Zod union), never a

@@ -21,12 +21,22 @@ export const ROLE_LABELS: Record<Role, string> = {
 export type NavLink = { href: string; label: string };
 
 // D-16: each role's nav contains only its own links. Admin gets Users + Log;
-// each department role gets Dashboard only in Phase 1.
+// each department role gets Dashboard. Phase 2 adds "Register FIR" for
+// Police/Admin (D-12: only Police/Admin can register an FIR) — the Admin
+// dashboard redirect removal is Plan 02-03's job, this only adds the nav
+// entry.
 export function navLinksForRole(role: Role): NavLink[] {
   if (role === "ADMIN") {
     return [
       { href: "/admin/users", label: "Users" },
       { href: "/admin/log", label: "Change Log" },
+      { href: "/cases/new", label: "Register FIR" },
+    ];
+  }
+  if (role === "POLICE") {
+    return [
+      { href: "/dashboard", label: "Dashboard" },
+      { href: "/cases/new", label: "Register FIR" },
     ];
   }
   return [{ href: "/dashboard", label: "Dashboard" }];
