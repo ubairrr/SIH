@@ -4,7 +4,7 @@ import { authorize } from "@/app/lib/authorize";
 import { prisma } from "@/app/lib/prisma";
 import { CaseDetailClient } from "./case-detail-client";
 import { TabBar, type CaseTab } from "./tab-bar";
-import { OverviewTab } from "./overview-tab";
+import { OverviewTab, missingExpectedDocumentLabel } from "./overview-tab";
 import { ChangeLogTab } from "./change-log-tab";
 
 const TABS: CaseTab[] = [
@@ -62,6 +62,30 @@ export default async function CaseDetailPage({
 
   const isClosed = kase.stage === "CLOSED_JUDGMENT";
 
+  // D-18: same three-checkpoint check OverviewTab makes for its own banner,
+  // computed independently here so the soft-warning notice inside
+  // AdvanceStageDialog (rendered by CaseDetailClient, which sits outside
+  // the tab-conditional content) is available regardless of which tab is
+  // active.
+  const [firCount, chargeSheetCount, judgmentCount] = await Promise.all([
+    prisma.document.count({
+      where: { caseId: kase.id, category: "FIR", deletedAt: null },
+    }),
+    prisma.document.count({
+      where: { caseId: kase.id, category: "CHARGE_SHEET", deletedAt: null },
+    }),
+    prisma.document.count({
+      where: { caseId: kase.id, category: "JUDGMENT", deletedAt: null },
+    }),
+  ]);
+
+  const missingDocLabel = missingExpectedDocumentLabel(
+    kase.stage,
+    firCount > 0,
+    chargeSheetCount > 0,
+    judgmentCount > 0,
+  );
+
   return (
     <div className="mx-auto max-w-4xl">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -76,6 +100,7 @@ export default async function CaseDetailPage({
           firNumber={kase.firNumber}
           stage={kase.stage}
           role={session.role}
+          missingDocLabel={missingDocLabel}
         />
       </div>
 

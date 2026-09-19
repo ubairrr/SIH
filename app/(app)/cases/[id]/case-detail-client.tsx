@@ -66,12 +66,14 @@ function AdvanceStageDialog({
   caseId,
   firNumber,
   nextStage,
+  missingDocLabel,
   onClose,
   onSuccess,
 }: {
   caseId: string;
   firNumber: string;
   nextStage: Stage;
+  missingDocLabel: string | null;
   onClose: () => void;
   onSuccess: () => void;
 }) {
@@ -110,6 +112,13 @@ function AdvanceStageDialog({
       <p className="break-words text-sm font-semibold text-slate-900">
         Advance {firNumber} to {STAGE_LABELS[nextStage]}?
       </p>
+
+      {missingDocLabel && (
+        <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          Note: {missingDocLabel} hasn&apos;t been uploaded yet. You can
+          still advance.
+        </div>
+      )}
 
       <div className="mt-4 flex flex-col gap-1">
         <label
@@ -375,11 +384,13 @@ export function CaseDetailClient({
   firNumber,
   stage,
   role,
+  missingDocLabel,
 }: {
   caseId: string;
   firNumber: string;
   stage: Stage;
   role: Role;
+  missingDocLabel: string | null;
 }) {
   const router = useRouter();
   const [openDialog, setOpenDialog] = useState<
@@ -440,6 +451,7 @@ export function CaseDetailClient({
           caseId={caseId}
           firNumber={firNumber}
           nextStage={nextStage}
+          missingDocLabel={missingDocLabel}
           onClose={() => setOpenDialog(null)}
           onSuccess={handleSuccess}
         />

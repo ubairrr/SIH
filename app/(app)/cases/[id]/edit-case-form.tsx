@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
@@ -16,18 +16,32 @@ type EditCaseFormInput = z.input<typeof updateCaseSchema>;
 
 const INPUT_CLASSES =
   "rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500";
+const BUTTON_CLASSES =
+  "rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-600 disabled:opacity-60";
+const CANCEL_CLASSES =
+  "rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-100 disabled:opacity-60";
 
 function toDateInputValue(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-// D-18/E10: opens prefilled with the case's current values; a closed-case
-// rejection (D-12 copy) or any unexpected server error renders in the
-// generic red-50/red-800 banner; entered values persist after an error
-// (react-hook-form keeps its own state — only a success clears the form via
-// router.refresh() re-rendering the parent Server Component with fresh
-// defaultValues).
+function formatDate(date: Date): string {
+  return date.toLocaleDateString("en-IN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+// D-12 platform-wide view/Edit rule: defaults to a read-only <dl>, matching
+// the E4 metadata-grid pattern, plus a top-right Edit button. Pressing Edit
+// swaps in the existing form markup with Save/Cancel. Cancel returns to view
+// mode without calling updateCaseDetails and without resetting react-hook-
+// form's field values (acceptable per D-12 — no explicit "discard on
+// cancel" requirement beyond returning to the read-only view). A successful
+// save also resets mode to "view".
 export function EditCaseForm({ kase }: { kase: Case }) {
+  const [mode, setMode] = useState<"view" | "edit">("view");
   const [state, formAction, pending] = useActionState<
     UpdateCaseState,
     FormData
@@ -59,10 +73,79 @@ export function EditCaseForm({ kase }: { kase: Case }) {
         }
       }
     }
+    if (state?.success) {
+      setMode("view");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
   const showBanner = state?.error && !state.fieldErrors;
+
+  if (mode === "view") {
+    return (
+      <div>
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setMode("edit")}
+            className={CANCEL_CLASSES}
+          >
+            Edit
+          </button>
+        </div>
+        <dl className="mt-4 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <dt className="text-xs uppercase text-slate-500">Title</dt>
+            <dd className="break-words text-sm text-slate-900">
+              {kase.title || "—"}
+            </dd>
+          </div>
+          <div className="sm:col-span-2">
+            <dt className="text-xs uppercase text-slate-500">
+              Offence / Sections
+            </dt>
+            <dd className="break-words text-sm text-slate-900">
+              {kase.offenceSections || "—"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase text-slate-500">
+              Incident Date
+            </dt>
+            <dd className="break-words text-sm text-slate-900">
+              {formatDate(kase.incidentDate)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase text-slate-500">
+              Police Station
+            </dt>
+            <dd className="break-words text-sm text-slate-900">
+              {kase.policeStation || "—"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase text-slate-500">Complainant</dt>
+            <dd className="break-words text-sm text-slate-900">
+              {kase.complainant || "—"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase text-slate-500">Accused</dt>
+            <dd className="break-words text-sm text-slate-900">
+              {kase.accused || "—"}
+            </dd>
+          </div>
+          <div className="sm:col-span-2">
+            <dt className="text-xs uppercase text-slate-500">Description</dt>
+            <dd className="break-words text-sm text-slate-900">
+              {kase.description || "—"}
+            </dd>
+          </div>
+        </dl>
+      </div>
+    );
+  }
 
   return (
     <form
@@ -227,13 +310,17 @@ export function EditCaseForm({ kase }: { kase: Case }) {
         </p>
       )}
 
-      <div>
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-md bg-blue-700 px-4 py-2 font-medium text-white transition hover:bg-blue-600 disabled:opacity-60"
-        >
+      <div className="flex gap-3">
+        <button type="submit" disabled={pending} className={BUTTON_CLASSES}>
           {pending ? "Saving…" : "Save changes"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("view")}
+          disabled={pending}
+          className={CANCEL_CLASSES}
+        >
+          Cancel
         </button>
       </div>
     </form>
