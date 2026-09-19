@@ -5,7 +5,13 @@ import { authorize } from "@/app/lib/authorize";
 import { prisma } from "@/app/lib/prisma";
 import { TYPE_LABELS } from "@/app/lib/file-magic";
 import { BUTTON_CLASSES } from "../../case-detail-client";
-import { MediaPreview, type MediaKind } from "./document-viewer-client";
+import { DocumentMetadataCard } from "../../document-metadata-card";
+import { VersionHistoryList } from "../../version-history-list";
+import {
+  DocumentActions,
+  MediaPreview,
+  type MediaKind,
+} from "./document-viewer-client";
 
 function mediaKindOf(mimeType: string): MediaKind | "zip" | null {
   if (mimeType === "application/pdf") return "pdf";
@@ -42,7 +48,7 @@ export default async function DocumentViewerPage({
   searchParams: Promise<{ version?: string }>;
 }) {
   const { id: caseId, docId } = await params;
-  await authorize();
+  const session = await authorize();
   const resolvedSearchParams = await searchParams;
 
   const document = await prisma.document.findUnique({
@@ -76,6 +82,14 @@ export default async function DocumentViewerPage({
       </div>
     );
   }
+
+  const isClosed = document.case.stage === "CLOSED_JUDGMENT";
+  // D-08: only the uploading department (matched by role) or Admin can
+  // change a document — enforced server-side already (document-guards.ts,
+  // 03-02). This is the visible-hiding layer on top of that boundary, per
+  // T-03-14.
+  const canEdit =
+    session.role === document.uploadedByRole || session.role === "ADMIN";
 
   const requestedVersionNumber = Number(resolvedSearchParams.version);
   const selectedVersion: DocumentVersion =
@@ -158,6 +172,36 @@ export default async function DocumentViewerPage({
           />
         </div>
       )}
+
+      {canEdit && !isClosed && (
+        <DocumentActions
+          caseId={caseId}
+          documentId={document.id}
+          kind={document.kind}
+          filename={selectedVersion.originalFilename}
+          existingDocument={{
+            id: document.id,
+            category: document.category,
+            evidenceType: document.evidenceType,
+            title: document.title,
+          }}
+        />
+      )}
+
+      <DocumentMetadataCard
+        documentId={document.id}
+        title={document.title}
+        description={document.description}
+        typeLabel={typeLabel}
+        isCategory={document.category !== null}
+        canEdit={canEdit && !isClosed}
+      />
+
+      <VersionHistoryList
+        caseId={caseId}
+        documentId={document.id}
+        versions={document.versions}
+      />
     </div>
   );
 }
