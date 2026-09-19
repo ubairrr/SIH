@@ -67,7 +67,7 @@ function formatBytes(bytes: number): string {
 // just reached through the local-mode staging route rather than the
 // (non-existent, in local mode) direct URL. [Rule 1 deviation — see SUMMARY.]
 function putWithProgress(
-  target: { url: string; token?: string; key: string },
+  target: { url: string; token?: string; key: string; uploadToken: string },
   file: File,
   onProgress: (pct: number) => void,
 ): Promise<void> {
@@ -82,6 +82,10 @@ function putWithProgress(
     if (isRemote && target.token) {
       xhr.setRequestHeader("Authorization", `Bearer ${target.token}`);
     }
+    // T-03-07-01: sent on every PUT (remote and local) — Supabase's signed
+    // URL ignores unrecognized headers, and the local-mode stage route
+    // verifies this before writing any bytes.
+    xhr.setRequestHeader("X-Upload-Token", target.uploadToken);
     xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) {
@@ -201,6 +205,7 @@ export function UploadDialog({
         caseId,
         documentId: existingDocument?.id ?? null,
         storageKey: requested.key,
+        uploadToken: requested.uploadToken,
         originalFilename: file.name,
         title,
         description: description.trim() ? description : undefined,
