@@ -105,6 +105,11 @@ export const finalizeUploadSchema = z
     caseId: z.string().min(1),
     documentId: z.string().min(1).nullable(),
     storageKey: z.string().min(1),
+    // T-03-07-04: server-issued, short-lived upload-session credential
+    // (app/lib/storage/upload-token.ts) binding this exact storageKey +
+    // caseId + documentId + userId — verified in finalizeUpload before any
+    // adapter/storage call.
+    uploadToken: z.string().min(1),
     // Required so DocumentVersion.originalFilename (a required DB column)
     // reflects the browser's actual File.name, never the document's title.
     // WR-04: capped at 255 chars — this value is later echoed back into the

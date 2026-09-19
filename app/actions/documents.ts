@@ -10,6 +10,7 @@ import { prisma } from "@/app/lib/prisma";
 import { writeAuditLog } from "@/app/lib/audit";
 import { getStorageAdapter, StorageAdapterError } from "@/app/lib/storage/adapter";
 import { buildStorageKey, isStorageKeyForTarget } from "@/app/lib/storage/key";
+import { signUploadToken, verifyUploadToken } from "@/app/lib/storage/upload-token";
 import {
   requestUploadSchema,
   finalizeUploadSchema,
@@ -33,7 +34,7 @@ import type { MutationResult } from "@/app/actions/users";
 const MAGIC_BYTE_SNIFF_LENGTH = 4100;
 
 export type RequestUploadResult =
-  | { url: string; token?: string; key: string }
+  | { url: string; token?: string; key: string; uploadToken: string }
   | { error: string };
 
 // D-01: server-side half of the signed direct-upload flow. Generates a
@@ -100,7 +101,17 @@ export async function requestUpload(
 
   try {
     const target = await getStorageAdapter().createUploadTarget(key);
-    return { url: target.url, token: target.token, key };
+    // T-03-07-01/T-03-07-04: bind this exact key+caseId+documentId+userId
+    // into a short-lived, purpose-bound credential — verified by both the
+    // local-mode stage PUT route and finalizeUpload before any byte is
+    // written or read.
+    const uploadToken = await signUploadToken({
+      key,
+      caseId: parsed.data.caseId,
+      documentId: parsed.data.documentId ?? null,
+      userId: actor.id,
+    });
+    return { url: target.url, token: target.token, key, uploadToken };
   } catch (err) {
     if (err instanceof StorageAdapterError) {
       console.error("requestUpload storage error", err);
@@ -145,6 +156,22 @@ export async function finalizeUpload(
       parsed.data.caseId,
       parsed.data.documentId,
     )
+  ) {
+    return { error: "Invalid or expired upload session. Please retry your upload." };
+  }
+
+  // T-03-07-04: verify the caller-specific, purpose-bound upload-session
+  // credential — closes the residual gap where the isStorageKeyForTarget
+  // format/prefix check above let a caller finalize a key staged by a
+  // different user for the same case/document. Must run before any bytes
+  // are read from storage.
+  const verifiedToken = await verifyUploadToken(parsed.data.uploadToken);
+  if (
+    !verifiedToken ||
+    verifiedToken.key !== parsed.data.storageKey ||
+    verifiedToken.userId !== actor.id ||
+    verifiedToken.caseId !== parsed.data.caseId ||
+    verifiedToken.documentId !== (parsed.data.documentId ?? null)
   ) {
     return { error: "Invalid or expired upload session. Please retry your upload." };
   }
