@@ -2,23 +2,48 @@ import { notFound } from "next/navigation";
 
 import { authorize } from "@/app/lib/authorize";
 import { prisma } from "@/app/lib/prisma";
-import { CaseMetadataGrid } from "./case-metadata-grid";
-import { StageTimeline } from "./stage-timeline";
-import { StageHistoryList } from "./stage-history-list";
-import { EditCaseForm } from "./edit-case-form";
 import { CaseDetailClient } from "./case-detail-client";
+import { TabBar, type CaseTab } from "./tab-bar";
+import { OverviewTab } from "./overview-tab";
+import { ChangeLogTab } from "./change-log-tab";
+
+const TABS: CaseTab[] = [
+  { key: "overview", label: "Overview" },
+  { key: "change-log", label: "Change log" },
+];
+
+const TAB_KEYS = TABS.map((t) => t.key);
 
 // ACC-01/D-01: any authenticated role (all departments + Admin) can open any
 // case's detail page regardless of its stage — there is no unit scoping and
 // no "not reached yet" hiding. A missing case is a real 404, distinct from
 // the role-based /access-denied 403 page used elsewhere (D-13).
+//
+// D-13: the page is now a URL-synced tab shell. `?tab=` selects the active
+// tab (E1: an unknown/missing value falls back to "overview" with no error
+// surface); `?page=` (only meaningful for `?tab=change-log`) selects the
+// Change log's page. Documents/Evidence entries are added to the same
+// `TABS` array literal by 03-04.
 export default async function CaseDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string; page?: string }>;
 }) {
   const { id } = await params;
   const session = await authorize();
+  const resolvedSearchParams = await searchParams;
+
+  const tab = TAB_KEYS.includes(resolvedSearchParams.tab ?? "")
+    ? (resolvedSearchParams.tab as string)
+    : "overview";
+
+  const requestedPage = Number(resolvedSearchParams.page);
+  const page =
+    Number.isFinite(requestedPage) && requestedPage >= 1
+      ? Math.floor(requestedPage)
+      : 1;
 
   const kase = await prisma.case.findUnique({
     where: { id },
@@ -60,47 +85,12 @@ export default async function CaseDetailPage({
         </div>
       )}
 
-      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Case Metadata
-        </h2>
-        <div className="mt-4">
-          <CaseMetadataGrid kase={kase} />
-        </div>
+      <div className="mt-6">
+        <TabBar tabs={TABS} activeTab={tab} />
       </div>
 
-      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Case Lifecycle
-        </h2>
-        <div className="mt-4">
-          <StageTimeline currentStage={kase.stage} />
-        </div>
-      </div>
-
-      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Stage History
-        </h2>
-        <div className="mt-4">
-          <StageHistoryList rows={kase.stageHistory} />
-        </div>
-      </div>
-
-      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Edit Case Details
-        </h2>
-        <div className="mt-4">
-          {kase.stage === "CLOSED_JUDGMENT" ? (
-            <p className="text-sm text-slate-500">
-              This case is closed and can no longer be edited.
-            </p>
-          ) : (
-            <EditCaseForm kase={kase} />
-          )}
-        </div>
-      </div>
+      {tab === "overview" && <OverviewTab kase={kase} />}
+      {tab === "change-log" && <ChangeLogTab caseId={kase.id} page={page} />}
     </div>
   );
 }
