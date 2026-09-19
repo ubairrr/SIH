@@ -42,7 +42,7 @@ export function sizeLimitBytes(fileType: SizeLimitFileType): number {
   return SIZE_LIMIT_MB_BY_TYPE[fileType] * 1024 * 1024;
 }
 
-function mimeToSizeLimitType(mime: string): SizeLimitFileType | null {
+export function mimeToSizeLimitType(mime: string): SizeLimitFileType | null {
   if (mime === "application/pdf") return "pdf";
   if (mime.startsWith("image/")) return "image";
   if (mime.startsWith("audio/")) return "audio";
@@ -58,6 +58,11 @@ function mimeToSizeLimitType(mime: string): SizeLimitFileType | null {
 export const requestUploadSchema = z
   .object({
     caseId: z.string().min(1),
+    // 03-02: present only when requesting a signed target for a NEW VERSION
+    // of an existing document — used purely to shape the storage key path
+    // (cases/{caseId}/{documentId}/v{n}-{uuid}), never to skip finalizeUpload's
+    // authoritative re-fetch of the existing document's own category/type.
+    documentId: z.string().min(1).optional(),
     kind: documentKindEnum,
     category: documentCategoryEnum.optional(),
     evidenceType: evidenceTypeEnum.optional(),
@@ -98,9 +103,20 @@ export const finalizeUploadSchema = z
     caseId: z.string().min(1),
     documentId: z.string().min(1).nullable(),
     storageKey: z.string().min(1),
+    // Required so DocumentVersion.originalFilename (a required DB column)
+    // reflects the browser's actual File.name, never the document's title.
+    originalFilename: z.string().min(1),
     title: z.string().min(1, "Title is required").max(200),
     description: z.string().max(2000).optional(),
     changeNote: z.string().max(1000).optional(),
+    // Only meaningful (and required) when documentId is null — a new
+    // document's category/evidenceType. For a new version, D-09 requires
+    // finalizeUpload to validate against the EXISTING document's own
+    // category/evidenceType, re-fetched server-side — these fields are
+    // ignored in that path even if a client sends them.
+    kind: documentKindEnum.optional(),
+    category: documentCategoryEnum.optional(),
+    evidenceType: evidenceTypeEnum.optional(),
   })
   .refine(
     (value) =>
@@ -109,6 +125,16 @@ export const finalizeUploadSchema = z
     {
       message: "A change note is required when adding a new version",
       path: ["changeNote"],
+    },
+  )
+  .refine(
+    (value) =>
+      value.documentId != null ||
+      (value.kind === "DOCUMENT" && value.category != null && value.evidenceType == null) ||
+      (value.kind === "EVIDENCE" && value.evidenceType != null && value.category == null),
+    {
+      message: "Exactly one of category/evidenceType must be set, matching kind, for a new upload",
+      path: ["kind"],
     },
   );
 

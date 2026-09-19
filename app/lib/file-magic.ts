@@ -25,6 +25,24 @@ export const ALLOWED_MIME_BY_TYPE: Record<string, string[]> = {
   FORENSIC_DATA: ["application/zip", "application/x-zip-compressed"],
 };
 
+// Human-readable labels for the D-04/D-09 rejection message, keyed the same
+// as ALLOWED_MIME_BY_TYPE — falls back to the raw key if a new enum value is
+// ever added here without a label.
+export const TYPE_LABELS: Record<string, string> = {
+  FIR: "FIR",
+  WITNESS_STATEMENT: "Witness Statement",
+  INVESTIGATION_RECORD: "Investigation Record",
+  CHARGE_SHEET: "Charge Sheet",
+  COURT_FILING: "Court Filing",
+  FORENSIC_REPORT: "Forensic Report",
+  LEGAL_NOTICE: "Legal Notice",
+  JUDGMENT: "Judgment",
+  PHOTO: "Photo",
+  VIDEO_CCTV: "CCTV Video",
+  AUDIO: "Audio",
+  FORENSIC_DATA: "Forensic Data",
+};
+
 export type DetectAndValidateResult = {
   ok: boolean;
   detectedMime: string | null;
