@@ -20,11 +20,13 @@
     "@prisma/client": "6.19.3",
     "@supabase/supabase-js": "2.116.0",
     "bcryptjs": "3.0.3",
+    "file-type": "21.3.4",
     "jose": "6.2.12",
     "next": "16.3.5",
     "prisma": "6.19.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-dropzone": "20.1.2",
     "react-hook-form": "7.88.0",
     "zod": "4.6.4"
   },

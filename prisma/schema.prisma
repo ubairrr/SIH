@@ -34,9 +34,11 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  auditLogEntries AuditLog[]
-  registeredCases Case[]
-  stageMoves      StageHistory[]
+  auditLogEntries  AuditLog[]
+  registeredCases  Case[]
+  stageMoves       StageHistory[]
+  documents        Document[]
+  documentVersions DocumentVersion[]
 }
 
 // D-06 stage order: FIR_REGISTERED -> UNDER_INVESTIGATION -> CHARGE_SHEET_FILED
@@ -80,6 +82,7 @@ model Case {
   updatedAt       DateTime  @updatedAt
 
   stageHistory StageHistory[]
+  documents    Document[]
 }
 
 // D-11: every stage move (register/advance/close/reopen) writes one row here
@@ -113,4 +116,78 @@ model AuditLog {
   targetLabel String
   details     Json?
   createdAt   DateTime @default(now())
+}
+
+// Phase 3 (D-01..D-08): fixed lists for the two kinds of files a case can
+// hold. Following the "fixed list = native enum" convention already used for
+// Stage/Role/Verdict (not AuditLog.action's open-string convention), since
+// document/evidence categories are closed sets, unlike audit action codes.
+enum DocumentKind {
+  DOCUMENT
+  EVIDENCE
+}
+
+enum DocumentCategory {
+  FIR
+  WITNESS_STATEMENT
+  INVESTIGATION_RECORD
+  CHARGE_SHEET
+  COURT_FILING
+  FORENSIC_REPORT
+  LEGAL_NOTICE
+  JUDGMENT
+}
+
+enum EvidenceType {
+  PHOTO
+  VIDEO_CCTV
+  AUDIO
+  FORENSIC_DATA
+}
+
+// D-05/D-08: exactly one of category/evidenceType is non-null depending on
+// kind — enforced in app code (03-02), not a DB constraint.
+// uploadedByRole mirrors StageHistory.actorRole's pattern of storing the
+// role alongside the actor id (the "uploading department" ownership anchor).
+model Document {
+  id             String            @id @default(uuid())
+  caseId         String
+  case           Case              @relation(fields: [caseId], references: [id])
+  kind           DocumentKind
+  category       DocumentCategory?
+  evidenceType   EvidenceType?
+  title          String
+  description    String?
+  uploadedById   String
+  uploadedBy     User              @relation(fields: [uploadedById], references: [id])
+  uploadedByRole Role
+  deletedAt      DateTime?
+  deletedReason  String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  versions DocumentVersion[]
+}
+
+// D-06: every version (document or evidence kind alike) gets a unique
+// storageKey and is written via putObjectNoOverwrite — no version's bytes
+// can ever be silently replaced. @@unique([documentId, versionNumber]) is
+// the DOC-01/02 concurrency truth: two concurrent finalize calls for the
+// same document can never both win the same version number.
+model DocumentVersion {
+  id                String   @id @default(uuid())
+  documentId        String
+  document          Document @relation(fields: [documentId], references: [id])
+  versionNumber     Int
+  storageKey        String   @unique
+  originalFilename  String
+  mimeType          String
+  sizeBytes         Int
+  changeNote        String?
+  createdById       String
+  createdBy         User     @relation(fields: [createdById], references: [id])
+  createdByRole     Role
+  createdAt         DateTime @default(now())
+
+  @@unique([documentId, versionNumber])
 }
