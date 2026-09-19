@@ -6,6 +6,7 @@ import { Readable } from "node:stream";
 import path from "node:path";
 
 import { StorageAdapterError, type RangeReadResult, type StorageAdapter } from "./adapter";
+import { isEexistError } from "./fs-errors";
 
 // LocalDiskStorageAdapter — offline-mode implementation, used by the
 // `npm run dev:offline` docker-compose path. Genuine fs/promises reads/
@@ -58,13 +59,16 @@ export class LocalDiskStorageAdapter implements StorageAdapter {
     await unlink(filePath);
   }
 
-  // D-01: local mode has no real signed-URL concept — the local file path
-  // itself is returned as `url` with no `token`. The browser-side direct-PUT
-  // flow (03-02/03-04) still writes to this same path via a Route Handler.
+  // D-01/T-03-07-03: local mode has no real signed-URL concept. `url` is
+  // returned empty (never the server's absolute filesystem path — that would
+  // disclose server internals to the browser). The browser-side direct-PUT
+  // flow (03-02/03-04) already treats any non-https:// url as "local mode —
+  // PUT through /api/uploads/stage", so this is a behavior-identical,
+  // non-leaking replacement.
   async createUploadTarget(key: string): Promise<{ url: string; token?: string }> {
     const filePath = this.resolve(key);
     await mkdir(path.dirname(filePath), { recursive: true });
-    return { url: filePath };
+    return { url: "" };
   }
 
   async readLeadingBytes(key: string, byteLength: number): Promise<Buffer> {
@@ -133,9 +137,25 @@ export class LocalDiskStorageAdapter implements StorageAdapter {
     };
   }
 
-  // D-06: exclusive method for version-creating code — writeFile never
-  // merges with an existing file, so this simply reuses putObject's body.
-  async putObjectNoOverwrite(key: string, data: Buffer, contentType: string): Promise<void> {
-    await this.putObject(key, data, contentType);
+  // D-06/T-03-07-02: exclusive method for version-creating code — genuinely
+  // exclusive via O_CREAT|O_EXCL ({ flag: "wx" }), throwing EEXIST instead of
+  // truncating when the key already has a written object. No longer
+  // delegates to putObject (which uses the default 'w' flag and silently
+  // overwrites).
+  async putObjectNoOverwrite(key: string, data: Buffer, _contentType: string): Promise<void> {
+    const filePath = this.resolve(key);
+    await mkdir(path.dirname(filePath), { recursive: true });
+    try {
+      await writeFile(filePath, data, { flag: "wx" });
+    } catch (error) {
+      if (isEexistError(error)) {
+        throw new StorageAdapterError(
+          "Storage key already has a written object; refusing to overwrite",
+        );
+      }
+      throw new StorageAdapterError(
+        `LocalDiskStorageAdapter.putObjectNoOverwrite failed for "${key}": ${(error as Error).message}`,
+      );
+    }
   }
 }
