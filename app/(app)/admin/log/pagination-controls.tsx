@@ -7,12 +7,23 @@ import { useTransition } from "react";
 // skips rendering this when totalPages <= 1, this is a defensive second
 // check). E7 loading backstop: buttons disable while navigation is in
 // flight via useTransition's isPending.
+//
+// 03-03: `basePath` generalizes the formerly-hardcoded `/admin/log?page=`
+// prefix so this component is reusable by ChangeLogTab. It is the URL up to
+// and including the query-string separator right before the "page=" key —
+// the default `"/admin/log?"` reproduces the exact previous href
+// (`/admin/log?page=${n}`) with no new required prop, so the existing Admin
+// Log call site is unchanged. ChangeLogTab passes
+// `basePath={`/cases/${caseId}?tab=change-log&`}` to land on
+// `/cases/{id}?tab=change-log&page={n}`.
 export function PaginationControls({
   page,
   totalPages,
+  basePath = "/admin/log?",
 }: {
   page: number;
   totalPages: number;
+  basePath?: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -23,7 +34,7 @@ export function PaginationControls({
 
   function goTo(nextPage: number) {
     startTransition(() => {
-      router.push(`/admin/log?page=${nextPage}`);
+      router.push(`${basePath}page=${nextPage}`);
     });
   }
 
