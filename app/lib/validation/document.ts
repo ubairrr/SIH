@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { ALLOWED_MIME_BY_TYPE, TYPE_LABELS } from "../file-magic";
+
 // D-05/D-03: fixed lists mirroring the DocumentKind/DocumentCategory/
 // EvidenceType Prisma enums exactly.
 export const documentKindEnum = z.enum(["DOCUMENT", "EVIDENCE"]);
@@ -158,12 +160,58 @@ export type SoftDeleteDocumentInput = z.infer<typeof softDeleteDocumentSchema>;
 
 export type ClientPrecheckResult = { ok: true } | { ok: false; message: string };
 
-// RED stub (03-04 Task 1) — deliberately wrong so the RED-phase tests fail
-// on assertion, not on import: always reports "ok". GREEN phase replaces
-// this with the real allow-list/size check.
+// Short, human-readable label per allowed mime — used only to render the
+// Copywriting Contract's "Allowed: {list}." sentence; never used for
+// detection logic (that stays magic-byte-based, server-side, in file-magic.ts).
+const MIME_SHORT_LABELS: Record<string, string> = {
+  "application/pdf": "PDF",
+  "image/jpeg": "JPEG",
+  "image/png": "PNG",
+  "image/webp": "WEBP",
+  "video/mp4": "MP4",
+  "video/webm": "WEBM",
+  "audio/mpeg": "MP3",
+  "audio/wav": "WAV",
+  "audio/x-wav": "WAV",
+  "audio/mp4": "M4A",
+  "application/zip": "ZIP",
+  "application/x-zip-compressed": "ZIP",
+};
+
+function shortLabelsFor(mimes: string[]): string {
+  return Array.from(new Set(mimes.map((mime) => MIME_SHORT_LABELS[mime] ?? mime))).join(", ");
+}
+
+// D-14/upload-dialog.tsx (03-04): client-side, advisory-only allow-list/size
+// pre-check (T-03-12 — never authoritative; finalizeUpload's server-side
+// magic-byte check is the real gate). Rejects a disallowed declared mime or
+// an oversized declared size BEFORE any network call; a size exactly at the
+// limit is accepted. Reuses file-magic.ts's ALLOWED_MIME_BY_TYPE/TYPE_LABELS
+// and this file's own size-limit map — never re-derives either.
 export function precheckUploadFile(
-  _file: { type: string; size: number },
-  _typeKey: string,
+  file: { type: string; size: number },
+  typeKey: string,
 ): ClientPrecheckResult {
+  const label = TYPE_LABELS[typeKey] ?? typeKey;
+  const allowedMimes = ALLOWED_MIME_BY_TYPE[typeKey] ?? [];
+
+  if (!allowedMimes.includes(file.type)) {
+    return {
+      ok: false,
+      message: `That file type isn't allowed for ${label}. Allowed: ${shortLabelsFor(allowedMimes)}.`,
+    };
+  }
+
+  const limitType = mimeToSizeLimitType(file.type);
+  if (limitType) {
+    const limitBytes = sizeLimitBytes(limitType);
+    if (file.size > limitBytes) {
+      return {
+        ok: false,
+        message: `That file is too large for ${label}. Maximum size: ${SIZE_LIMIT_MB_BY_TYPE[limitType]}MB.`,
+      };
+    }
+  }
+
   return { ok: true };
 }

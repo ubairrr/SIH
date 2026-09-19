@@ -22,26 +22,36 @@ const VERDICT_OPTIONS: { value: VerdictValue; label: string }[] = [
   { value: "COMPOUNDED", label: "Compounded" },
 ];
 
-const BUTTON_CLASSES =
+export const BUTTON_CLASSES =
   "rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-600 disabled:opacity-60";
-const CANCEL_CLASSES =
+export const CANCEL_CLASSES =
   "rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-100 disabled:opacity-60";
-const TEXTAREA_CLASSES =
+export const TEXTAREA_CLASSES =
   "rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500";
 
 // Same local-useState pending/error + direct-async-Server-Action-call
 // pattern as users-page-client.tsx's Dialog/ChangeRoleDialog/
 // ToggleActiveDialog — but light-themed per 02-UI-SPEC.md.
-function Dialog({
+// Exported (03-04) for reuse by upload-dialog.tsx, which needs a wider
+// `max-w-lg` panel (it holds a dropzone) — hence the optional
+// `widthClassName` override, defaulting to every existing caller's
+// unchanged `max-w-md`. `max-h-[90vh] overflow-y-auto` added per
+// 03-UI-SPEC.md's overflow resolution (E5/E7/E2): the dialog panel scrolls
+// vertically on short viewports instead of overflowing.
+export function Dialog({
   children,
   onClose,
+  widthClassName = "max-w-md",
 }: {
   children: React.ReactNode;
   onClose: () => void;
+  widthClassName?: string;
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-      <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-xl">
+      <div
+        className={`w-full ${widthClassName} max-h-[90vh] overflow-y-auto rounded-lg border border-slate-200 bg-white p-6 shadow-xl`}
+      >
         {children}
       </div>
       <button
@@ -54,7 +64,7 @@ function Dialog({
   );
 }
 
-function ErrorBanner({ message }: { message: string }) {
+export function ErrorBanner({ message }: { message: string }) {
   return (
     <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
       {message}
