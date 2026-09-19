@@ -13,6 +13,16 @@
 import { SupabaseStorageAdapter } from "./supabase";
 import { LocalDiskStorageAdapter } from "./local";
 
+// WR-03: distinct error type for storage-layer failures (filesystem paths,
+// Supabase bucket/key details) so callers can log the real message
+// server-side while returning a generic, non-leaking message to the client.
+export class StorageAdapterError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "StorageAdapterError";
+  }
+}
+
 export type RangeReadResult = {
   stream: ReadableStream;
   start: number;

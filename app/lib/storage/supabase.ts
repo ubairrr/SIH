@@ -2,7 +2,7 @@ import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
 
-import type { RangeReadResult, StorageAdapter } from "./adapter";
+import { StorageAdapterError, type RangeReadResult, type StorageAdapter } from "./adapter";
 
 // SupabaseStorageAdapter — hosted-mode implementation.
 //
@@ -29,7 +29,7 @@ export class SupabaseStorageAdapter implements StorageAdapter {
       .upload(key, data, { contentType, upsert: true });
 
     if (error) {
-      throw new Error(`SupabaseStorageAdapter.putObject failed for "${key}": ${error.message}`);
+      throw new StorageAdapterError(`SupabaseStorageAdapter.putObject failed for "${key}": ${error.message}`);
     }
   }
 
@@ -37,7 +37,7 @@ export class SupabaseStorageAdapter implements StorageAdapter {
     const { data, error } = await this.client().storage.from(BUCKET).download(key);
 
     if (error || !data) {
-      throw new Error(
+      throw new StorageAdapterError(
         `SupabaseStorageAdapter.getObjectStream failed for "${key}": ${error?.message ?? "no data returned"}`,
       );
     }
@@ -49,7 +49,7 @@ export class SupabaseStorageAdapter implements StorageAdapter {
     const { error } = await this.client().storage.from(BUCKET).remove([key]);
 
     if (error) {
-      throw new Error(`SupabaseStorageAdapter.deleteObject failed for "${key}": ${error.message}`);
+      throw new StorageAdapterError(`SupabaseStorageAdapter.deleteObject failed for "${key}": ${error.message}`);
     }
   }
 
@@ -63,7 +63,7 @@ export class SupabaseStorageAdapter implements StorageAdapter {
       .createSignedUploadUrl(key);
 
     if (error || !data) {
-      throw new Error(
+      throw new StorageAdapterError(
         `SupabaseStorageAdapter.createUploadTarget failed for "${key}": ${error?.message ?? "no data returned"}`,
       );
     }
@@ -75,7 +75,7 @@ export class SupabaseStorageAdapter implements StorageAdapter {
     const { data, error } = await this.client().storage.from(BUCKET).download(key);
 
     if (error || !data) {
-      throw new Error(
+      throw new StorageAdapterError(
         `SupabaseStorageAdapter.readLeadingBytes failed for "${key}": ${error?.message ?? "no data returned"}`,
       );
     }
@@ -88,7 +88,7 @@ export class SupabaseStorageAdapter implements StorageAdapter {
     const { data, error } = await this.client().storage.from(BUCKET).download(key);
 
     if (error || !data) {
-      throw new Error(
+      throw new StorageAdapterError(
         `SupabaseStorageAdapter.getObjectSize failed for "${key}": ${error?.message ?? "no data returned"}`,
       );
     }
@@ -113,12 +113,12 @@ export class SupabaseStorageAdapter implements StorageAdapter {
 
     const response = await fetch(url, { headers });
     if (!response.ok && response.status !== 206) {
-      throw new Error(
+      throw new StorageAdapterError(
         `SupabaseStorageAdapter.readRange failed for "${key}": HTTP ${response.status}`,
       );
     }
     if (!response.body) {
-      throw new Error(`SupabaseStorageAdapter.readRange failed for "${key}": no response body`);
+      throw new StorageAdapterError(`SupabaseStorageAdapter.readRange failed for "${key}": no response body`);
     }
 
     const contentRange = response.headers.get("content-range");
@@ -156,7 +156,7 @@ export class SupabaseStorageAdapter implements StorageAdapter {
       .upload(key, data, { contentType, upsert: false });
 
     if (error) {
-      throw new Error(
+      throw new StorageAdapterError(
         `SupabaseStorageAdapter.putObjectNoOverwrite failed for "${key}": ${error.message}`,
       );
     }

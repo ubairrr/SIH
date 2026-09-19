@@ -5,7 +5,7 @@ import { createReadStream } from "node:fs";
 import { Readable } from "node:stream";
 import path from "node:path";
 
-import type { RangeReadResult, StorageAdapter } from "./adapter";
+import { StorageAdapterError, type RangeReadResult, type StorageAdapter } from "./adapter";
 
 // LocalDiskStorageAdapter — offline-mode implementation, used by the
 // `npm run dev:offline` docker-compose path. Genuine fs/promises reads/
@@ -15,8 +15,21 @@ export class LocalDiskStorageAdapter implements StorageAdapter {
     return process.env.LOCAL_STORAGE_PATH ?? "./.data/storage";
   }
 
+  // CR-01: `path.join` alone does NOT confine the result to `root` — a key
+  // containing `..` segments can resolve outside LOCAL_STORAGE_PATH. Every
+  // caller of resolve() must have already validated the key's shape
+  // upstream (see app/lib/storage/key.ts), but this containment check is a
+  // hard backstop so a resolved path escaping root is never used, even if a
+  // future caller forgets that validation.
   private resolve(key: string) {
-    return path.join(this.root(), key);
+    const root = path.resolve(this.root());
+    const resolved = path.resolve(root, key);
+    if (resolved !== root && !resolved.startsWith(root + path.sep)) {
+      throw new StorageAdapterError(
+        `Storage key resolves outside the storage root: "${key}"`,
+      );
+    }
+    return resolved;
   }
 
   async putObject(key: string, data: Buffer, _contentType: string): Promise<void> {
@@ -32,7 +45,7 @@ export class LocalDiskStorageAdapter implements StorageAdapter {
     try {
       await access(filePath);
     } catch (error) {
-      throw new Error(
+      throw new StorageAdapterError(
         `LocalDiskStorageAdapter.getObjectStream failed for "${key}": ${(error as Error).message}`,
       );
     }
@@ -56,20 +69,34 @@ export class LocalDiskStorageAdapter implements StorageAdapter {
 
   async readLeadingBytes(key: string, byteLength: number): Promise<Buffer> {
     const filePath = this.resolve(key);
-    const handle = await open(filePath, "r");
     try {
-      const buffer = Buffer.alloc(byteLength);
-      const { bytesRead } = await handle.read(buffer, 0, byteLength, 0);
-      return buffer.subarray(0, bytesRead);
-    } finally {
-      await handle.close();
+      const handle = await open(filePath, "r");
+      try {
+        const buffer = Buffer.alloc(byteLength);
+        const { bytesRead } = await handle.read(buffer, 0, byteLength, 0);
+        return buffer.subarray(0, bytesRead);
+      } finally {
+        await handle.close();
+      }
+    } catch (error) {
+      if (error instanceof StorageAdapterError) throw error;
+      throw new StorageAdapterError(
+        `LocalDiskStorageAdapter.readLeadingBytes failed for "${key}": ${(error as Error).message}`,
+      );
     }
   }
 
   async getObjectSize(key: string): Promise<number> {
     const filePath = this.resolve(key);
-    const stats = await stat(filePath);
-    return stats.size;
+    try {
+      const stats = await stat(filePath);
+      return stats.size;
+    } catch (error) {
+      if (error instanceof StorageAdapterError) throw error;
+      throw new StorageAdapterError(
+        `LocalDiskStorageAdapter.getObjectSize failed for "${key}": ${(error as Error).message}`,
+      );
+    }
   }
 
   // Parses a `Range: bytes=start-end` header and returns a ranged read via
