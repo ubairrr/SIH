@@ -107,7 +107,9 @@ export const finalizeUploadSchema = z
     storageKey: z.string().min(1),
     // Required so DocumentVersion.originalFilename (a required DB column)
     // reflects the browser's actual File.name, never the document's title.
-    originalFilename: z.string().min(1),
+    // WR-04: capped at 255 chars — this value is later echoed back into the
+    // Content-Disposition response header.
+    originalFilename: z.string().min(1).max(255),
     title: z.string().min(1, "Title is required").max(200),
     description: z.string().max(2000).optional(),
     changeNote: z.string().max(1000).optional(),

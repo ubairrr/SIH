@@ -17,6 +17,13 @@ export const runtime = "nodejs";
 // own NEXT_REDIRECT digest shape without modifying verifySession() itself
 // (shared by every page/Server Action) and without importing an internal,
 // non-public Next.js module path.
+// WR-04: originalFilename is a client-supplied File.name — strip characters
+// that could break out of the quoted Content-Disposition attribute, and cap
+// its length before it is ever echoed back into a response header.
+function sanitizeFilenameForHeader(name: string): string {
+  return name.replace(/["\r\n]/g, "").slice(0, 255);
+}
+
 function isNextRedirectError(error: unknown): boolean {
   if (typeof error !== "object" || error === null || !("digest" in error)) {
     return false;
@@ -82,7 +89,7 @@ export async function GET(
     status,
     headers: {
       "Content-Type": version.mimeType,
-      "Content-Disposition": `${isDownload ? "attachment" : "inline"}; filename="${version.originalFilename}"`,
+      "Content-Disposition": `${isDownload ? "attachment" : "inline"}; filename="${sanitizeFilenameForHeader(version.originalFilename)}"`,
       "Accept-Ranges": "bytes",
       ...(status === 206
         ? {
