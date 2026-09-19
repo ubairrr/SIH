@@ -13,10 +13,31 @@
 import { SupabaseStorageAdapter } from "./supabase";
 import { LocalDiskStorageAdapter } from "./local";
 
+export type RangeReadResult = {
+  stream: ReadableStream;
+  start: number;
+  end: number;
+  total: number;
+  status: 200 | 206;
+};
+
 export interface StorageAdapter {
   putObject(key: string, data: Buffer, contentType: string): Promise<void>;
   getObjectStream(key: string): Promise<ReadableStream>;
   deleteObject(key: string): Promise<void>;
+  // D-01: server-side half of the signed direct-upload flow — the server
+  // authorizes and hands back a short-lived signed upload target; the
+  // browser (03-02/03-04) PUTs bytes straight to storage, and a later
+  // finalizeUpload call re-validates before any DB row is created. No
+  // Document/DocumentVersion row is ever created here.
+  createUploadTarget(key: string): Promise<{ url: string; token?: string }>;
+  readLeadingBytes(key: string, byteLength: number): Promise<Buffer>;
+  readRange(key: string, rangeHeader: string | null): Promise<RangeReadResult>;
+  getObjectSize(key: string): Promise<number>;
+  // D-06: exclusive method for version-creating code (document AND evidence
+  // alike) — never upsert:true, so no version's bytes can ever be silently
+  // replaced. putObject/upsert:true stays untouched for Phase 1 callers.
+  putObjectNoOverwrite(key: string, data: Buffer, contentType: string): Promise<void>;
 }
 
 export function getStorageAdapter(): StorageAdapter {

@@ -2,7 +2,7 @@ import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
 
-import type { StorageAdapter } from "./adapter";
+import type { RangeReadResult, StorageAdapter } from "./adapter";
 
 // SupabaseStorageAdapter — hosted-mode implementation.
 //
@@ -50,6 +50,115 @@ export class SupabaseStorageAdapter implements StorageAdapter {
 
     if (error) {
       throw new Error(`SupabaseStorageAdapter.deleteObject failed for "${key}": ${error.message}`);
+    }
+  }
+
+  // D-01: server side of the signed direct-upload flow. The browser
+  // (03-02/03-04) PUTs bytes straight to `url` using `token`; no
+  // Document/DocumentVersion row is created here — that happens in a later
+  // finalizeUpload call that re-validates the uploaded object.
+  async createUploadTarget(key: string): Promise<{ url: string; token?: string }> {
+    const { data, error } = await this.client()
+      .storage.from(BUCKET)
+      .createSignedUploadUrl(key);
+
+    if (error || !data) {
+      throw new Error(
+        `SupabaseStorageAdapter.createUploadTarget failed for "${key}": ${error?.message ?? "no data returned"}`,
+      );
+    }
+
+    return { url: data.signedUrl, token: data.token };
+  }
+
+  async readLeadingBytes(key: string, byteLength: number): Promise<Buffer> {
+    const { data, error } = await this.client().storage.from(BUCKET).download(key);
+
+    if (error || !data) {
+      throw new Error(
+        `SupabaseStorageAdapter.readLeadingBytes failed for "${key}": ${error?.message ?? "no data returned"}`,
+      );
+    }
+
+    const buffer = Buffer.from(await data.arrayBuffer());
+    return buffer.subarray(0, byteLength);
+  }
+
+  async getObjectSize(key: string): Promise<number> {
+    const { data, error } = await this.client().storage.from(BUCKET).download(key);
+
+    if (error || !data) {
+      throw new Error(
+        `SupabaseStorageAdapter.getObjectSize failed for "${key}": ${error?.message ?? "no data returned"}`,
+      );
+    }
+
+    return data.size;
+  }
+
+  // RESEARCH.md Open Question 2: `.download()` does not expose a Range
+  // passthrough, so a true partial read requires a direct authenticated
+  // fetch() against the Storage REST object endpoint with the incoming
+  // Range header forwarded verbatim (T-03-01: the header value only ever
+  // originates from the current request's own Range header — the key/path
+  // is always server-generated, never client-controlled).
+  async readRange(key: string, rangeHeader: string | null): Promise<RangeReadResult> {
+    const url = `${process.env.SUPABASE_URL}/storage/v1/object/${BUCKET}/${key}`;
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+    };
+    if (rangeHeader) {
+      headers.Range = rangeHeader;
+    }
+
+    const response = await fetch(url, { headers });
+    if (!response.ok && response.status !== 206) {
+      throw new Error(
+        `SupabaseStorageAdapter.readRange failed for "${key}": HTTP ${response.status}`,
+      );
+    }
+    if (!response.body) {
+      throw new Error(`SupabaseStorageAdapter.readRange failed for "${key}": no response body`);
+    }
+
+    const contentRange = response.headers.get("content-range");
+    const contentLength = Number.parseInt(response.headers.get("content-length") ?? "0", 10);
+
+    let start = 0;
+    let end = contentLength - 1;
+    let total = contentLength;
+    if (contentRange) {
+      // Format: "bytes start-end/total"
+      const match = contentRange.match(/bytes (\d+)-(\d+)\/(\d+)/);
+      if (match) {
+        start = Number.parseInt(match[1], 10);
+        end = Number.parseInt(match[2], 10);
+        total = Number.parseInt(match[3], 10);
+      }
+    }
+
+    return {
+      stream: response.body,
+      start,
+      end,
+      total,
+      status: response.status === 206 ? 206 : 200,
+    };
+  }
+
+  // D-06: exclusive method for version-creating code (document AND evidence
+  // alike) — never upsert:true, so no version's storage object is ever
+  // overwritten. putObject's existing upsert:true behavior is untouched for
+  // Phase 1 callers.
+  async putObjectNoOverwrite(key: string, data: Buffer, contentType: string): Promise<void> {
+    const { error } = await this.client()
+      .storage.from(BUCKET)
+      .upload(key, data, { contentType, upsert: false });
+
+    if (error) {
+      throw new Error(
+        `SupabaseStorageAdapter.putObjectNoOverwrite failed for "${key}": ${error.message}`,
+      );
     }
   }
 }
