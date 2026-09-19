@@ -8,7 +8,8 @@ import { Prisma } from "@prisma/client";
 import { authorize } from "@/app/lib/authorize";
 import { prisma } from "@/app/lib/prisma";
 import { writeAuditLog } from "@/app/lib/audit";
-import { getStorageAdapter } from "@/app/lib/storage/adapter";
+import { getStorageAdapter, StorageAdapterError } from "@/app/lib/storage/adapter";
+import { buildStorageKey, isStorageKeyForTarget } from "@/app/lib/storage/key";
 import {
   requestUploadSchema,
   finalizeUploadSchema,
@@ -43,7 +44,7 @@ export type RequestUploadResult =
 export async function requestUpload(
   input: unknown,
 ): Promise<RequestUploadResult> {
-  await authorize();
+  const actor = await authorize();
 
   const parsed = requestUploadSchema.safeParse(input);
   if (!parsed.success) {
@@ -68,20 +69,43 @@ export async function requestUpload(
 
   let key: string;
   if (parsed.data.documentId) {
+    // CR-03/WR-01: fetch-and-check the target document BEFORE ever issuing
+    // an upload target for it — a documentId must exist, belong to this
+    // case, and be owned by the caller's department (or Admin). Previously
+    // this check only happened in finalizeUpload, so any authenticated user
+    // could obtain a signed/staged upload target for any document.
+    const existingDocument = await prisma.document.findUnique({
+      where: { id: parsed.data.documentId },
+    });
+    if (!existingDocument || existingDocument.caseId !== parsed.data.caseId) {
+      return { error: "Document not found for this case." };
+    }
+    try {
+      assertDocumentOwner(actor.role, existingDocument.uploadedByRole);
+      assertNotAlreadyDeleted(existingDocument.deletedAt);
+    } catch (err) {
+      if (err instanceof Error) return { error: err.message };
+      throw err;
+    }
+
     const maxVersion = await prisma.documentVersion.aggregate({
       where: { documentId: parsed.data.documentId },
       _max: { versionNumber: true },
     });
     const nextVersion = (maxVersion._max.versionNumber ?? 0) + 1;
-    key = `cases/${parsed.data.caseId}/${parsed.data.documentId}/v${nextVersion}-${randomUUID()}`;
+    key = buildStorageKey(parsed.data.caseId, parsed.data.documentId, nextVersion);
   } else {
-    key = `cases/${parsed.data.caseId}/${randomUUID()}/v1-${randomUUID()}`;
+    key = buildStorageKey(parsed.data.caseId, null, 1);
   }
 
   try {
     const target = await getStorageAdapter().createUploadTarget(key);
     return { url: target.url, token: target.token, key };
   } catch (err) {
+    if (err instanceof StorageAdapterError) {
+      console.error("requestUpload storage error", err);
+      return { error: "Couldn't prepare the upload. Please try again." };
+    }
     if (err instanceof Error) return { error: err.message };
     throw err;
   }

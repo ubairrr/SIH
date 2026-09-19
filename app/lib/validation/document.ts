@@ -64,7 +64,7 @@ export const requestUploadSchema = z
     // of an existing document — used purely to shape the storage key path
     // (cases/{caseId}/{documentId}/v{n}-{uuid}), never to skip finalizeUpload's
     // authoritative re-fetch of the existing document's own category/type.
-    documentId: z.string().min(1).optional(),
+    documentId: z.string().uuid().optional(),
     kind: documentKindEnum,
     category: documentCategoryEnum.optional(),
     evidenceType: evidenceTypeEnum.optional(),
