@@ -155,3 +155,15 @@ export const softDeleteDocumentSchema = z.object({
 });
 
 export type SoftDeleteDocumentInput = z.infer<typeof softDeleteDocumentSchema>;
+
+export type ClientPrecheckResult = { ok: true } | { ok: false; message: string };
+
+// RED stub (03-04 Task 1) — deliberately wrong so the RED-phase tests fail
+// on assertion, not on import: always reports "ok". GREEN phase replaces
+// this with the real allow-list/size check.
+export function precheckUploadFile(
+  _file: { type: string; size: number },
+  _typeKey: string,
+): ClientPrecheckResult {
+  return { ok: true };
+}
