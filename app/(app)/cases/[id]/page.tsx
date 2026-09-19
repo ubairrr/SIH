@@ -6,9 +6,15 @@ import { CaseDetailClient } from "./case-detail-client";
 import { TabBar, type CaseTab } from "./tab-bar";
 import { OverviewTab, missingExpectedDocumentLabel } from "./overview-tab";
 import { ChangeLogTab } from "./change-log-tab";
+import { DocumentsTab } from "./documents-tab";
+import { EvidenceTab } from "./evidence-tab";
 
+// D-13: fixed tab order — Overview first, Change log last, Documents/
+// Evidence added in between by this plan (03-04).
 const TABS: CaseTab[] = [
   { key: "overview", label: "Overview" },
+  { key: "documents", label: "Documents" },
+  { key: "evidence", label: "Evidence" },
   { key: "change-log", label: "Change log" },
 ];
 
@@ -115,6 +121,12 @@ export default async function CaseDetailPage({
       </div>
 
       {tab === "overview" && <OverviewTab kase={kase} />}
+      {tab === "documents" && (
+        <DocumentsTab caseId={kase.id} isClosed={isClosed} />
+      )}
+      {tab === "evidence" && (
+        <EvidenceTab caseId={kase.id} isClosed={isClosed} />
+      )}
       {tab === "change-log" && <ChangeLogTab caseId={kase.id} page={page} />}
     </div>
   );
