@@ -4,6 +4,8 @@ import type { DocumentVersion } from "@prisma/client";
 import { authorize } from "@/app/lib/authorize";
 import { prisma } from "@/app/lib/prisma";
 import { TYPE_LABELS } from "@/app/lib/file-magic";
+import { getDocumentLogPage } from "@/app/actions/document-log";
+import { PaginationControls } from "@/app/(app)/admin/log/pagination-controls";
 import { BUTTON_CLASSES } from "../../case-detail-client";
 import { DocumentMetadataCard } from "../../document-metadata-card";
 import { VersionHistoryList } from "../../version-history-list";
@@ -12,6 +14,15 @@ import {
   MediaPreview,
   type MediaKind,
 } from "./document-viewer-client";
+
+const LOG_PAGE_SIZE = 25;
+
+function formatDetails(details: unknown): string {
+  if (details === null || details === undefined) {
+    return "—";
+  }
+  return JSON.stringify(details, null, 2);
+}
 
 function mediaKindOf(mimeType: string): MediaKind | "zip" | null {
   if (mimeType === "application/pdf") return "pdf";
@@ -45,7 +56,7 @@ export default async function DocumentViewerPage({
   searchParams,
 }: {
   params: Promise<{ id: string; docId: string }>;
-  searchParams: Promise<{ version?: string }>;
+  searchParams: Promise<{ version?: string; page?: string }>;
 }) {
   const { id: caseId, docId } = await params;
   const session = await authorize();
@@ -105,6 +116,21 @@ export default async function DocumentViewerPage({
   const previewUrl = `/api/files/${selectedVersion.id}`;
   const downloadUrl = `/api/files/${selectedVersion.id}?download=1`;
   const mediaKind = mediaKindOf(selectedVersion.mimeType);
+
+  // LOG-03/D-19/D-21: per-document change log, reusing change-log-tab.tsx's
+  // exact table markup and PaginationControls, scoped to this document via
+  // getDocumentLogPage instead of getCaseLogPage.
+  const requestedPage = Number(resolvedSearchParams.page);
+  const logPage =
+    Number.isFinite(requestedPage) && requestedPage >= 1
+      ? Math.floor(requestedPage)
+      : 1;
+  const { rows: logRows, total: logTotal } = await getDocumentLogPage({
+    documentId: document.id,
+    page: logPage,
+    pageSize: LOG_PAGE_SIZE,
+  });
+  const logTotalPages = Math.max(1, Math.ceil(logTotal / LOG_PAGE_SIZE));
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-8">
@@ -202,6 +228,87 @@ export default async function DocumentViewerPage({
         documentId={document.id}
         versions={document.versions}
       />
+
+      <div className="mt-8">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Change Log
+        </h2>
+
+        {logTotal === 0 ? (
+          <div className="mt-3 rounded-lg border border-slate-200 bg-white p-8 text-center">
+            <p className="text-slate-900">
+              No changes recorded yet for this document.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="mt-3 overflow-x-auto rounded-lg border border-slate-200">
+              <table className="min-w-full divide-y divide-slate-200 text-sm">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      Time
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      Actor
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      Role
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      Action
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      Target
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      Details
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 bg-white">
+                  {logRows.map((row) => (
+                    <tr key={row.id.toString()}>
+                      <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                        {row.createdAt.toLocaleString()}
+                      </td>
+                      <td
+                        className="max-w-[160px] truncate px-3 py-2 text-slate-900"
+                        title={row.actor.fullName}
+                      >
+                        {row.actor.fullName}
+                      </td>
+                      <td className="px-3 py-2 text-slate-700">
+                        {row.actorRole}
+                      </td>
+                      <td className="px-3 py-2 font-mono text-xs text-slate-700">
+                        {row.action}
+                      </td>
+                      <td
+                        className="max-w-[160px] truncate px-3 py-2 text-slate-700"
+                        title={row.targetLabel || undefined}
+                      >
+                        {row.targetLabel || "—"}
+                      </td>
+                      <td className="max-w-xs px-3 py-2">
+                        <div className="max-h-32 overflow-y-auto whitespace-pre-wrap break-all font-mono text-xs text-slate-500">
+                          {formatDetails(row.details)}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <PaginationControls
+              page={logPage}
+              totalPages={logTotalPages}
+              basePath={`/cases/${caseId}/documents/${document.id}?`}
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 }
