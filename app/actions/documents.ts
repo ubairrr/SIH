@@ -133,6 +133,22 @@ export async function finalizeUpload(
     };
   }
 
+  // CR-02: reject any storageKey that isn't the exact shape the server
+  // itself generates for THIS caseId/documentId, before it is ever used to
+  // read from storage. Without this, a caller could invoke finalizeUpload
+  // directly (skipping requestUpload/the PUT step entirely) with a
+  // storageKey pointing at an arbitrary already-staged or path-traversed
+  // object.
+  if (
+    !isStorageKeyForTarget(
+      parsed.data.storageKey,
+      parsed.data.caseId,
+      parsed.data.documentId,
+    )
+  ) {
+    return { error: "Invalid or expired upload session. Please retry your upload." };
+  }
+
   const adapter = getStorageAdapter();
   let resultDocumentId: string | undefined;
   let resultVersionId: string | undefined;
@@ -290,6 +306,13 @@ export async function finalizeUpload(
       return {
         error: "Another version was just added — please retry your upload.",
       };
+    }
+    // WR-03: storage-adapter errors embed filesystem paths / bucket
+    // internals — log the real message server-side only, never surface it
+    // to the client.
+    if (err instanceof StorageAdapterError) {
+      console.error("finalizeUpload storage error", err);
+      return { error: "Couldn't complete the upload. Please try again." };
     }
     if (err instanceof Error) {
       return { error: err.message };
