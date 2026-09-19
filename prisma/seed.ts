@@ -1,10 +1,20 @@
-import { PrismaClient } from "@prisma/client";
-import type { Role, Stage } from "@prisma/client";
+import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+
+import { Prisma, PrismaClient } from "@prisma/client";
+import type { DocumentCategory, EvidenceType, Role, Stage } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 import { DEMO_ACCOUNTS, DEMO_PASSWORD } from "../app/lib/demo-accounts";
+import { getStorageAdapter } from "../app/lib/storage/adapter";
 
 const prisma = new PrismaClient();
+
+// D-22: small, real sample files committed under prisma/seed-files/, read
+// from disk and uploaded through the real StorageAdapter (never inlined
+// bytes) — same putObjectNoOverwrite path live finalizeUpload uses.
+const SEED_FILES_DIR = path.join(__dirname, "seed-files");
 
 // D-18: exactly 5 accounts, one per role — the roster lives in
 // app/lib/demo-accounts.ts, shared with the login page's Demo Accounts
@@ -23,6 +33,282 @@ async function main() {
   console.log(`Seeded ${DEMO_ACCOUNTS.length} demo accounts (idempotent).`);
 
   await seedCases();
+}
+
+// D-22: one entry per DocumentVersion this document should end up with, in
+// the order they should be created. versionNumber is documentation only —
+// attachSeedDocument always recomputes the real next version via a
+// MAX(versionNumber)+1-inside-transaction aggregate, exactly like live
+// finalizeUpload, never trusting a hardcoded literal.
+type SeedVersionSpec = {
+  filename: string;
+  mimeType: string;
+  versionNumber: number;
+  changeNote: string | null;
+};
+
+type SeedDocumentSpec = {
+  title: string;
+  description?: string;
+  kind: "DOCUMENT" | "EVIDENCE";
+  category?: DocumentCategory;
+  evidenceType?: EvidenceType;
+  actorRole: Role;
+  versions: SeedVersionSpec[];
+};
+
+// D-23: the hero case's FIR, attached inside the same transaction that
+// creates the hero case every reseed.
+const HERO_CASE_DOCUMENTS: SeedDocumentSpec[] = [
+  {
+    title: "FIR — Theft and Criminal Intimidation at Kotwali Market",
+    kind: "DOCUMENT",
+    category: "FIR",
+    actorRole: "POLICE",
+    versions: [
+      {
+        filename: "fir-kotwali.pdf",
+        mimeType: "application/pdf",
+        versionNumber: 1,
+        changeNote: null,
+      },
+    ],
+  },
+];
+
+// D-22: sample document/evidence sets for the supporting cases that reach
+// CHARGE_SHEET_FILED or later. Cases not listed here (e.g. the
+// UNDER_INVESTIGATION and one of the two CLOSED_JUDGMENT cases) simply have
+// zero Document rows — their Documents/Evidence tabs render the normal
+// empty state.
+const SUPPORTING_CASE_DOCUMENTS: Record<string, SeedDocumentSpec[]> = {
+  "KOT/2026/0089": [
+    {
+      title: "Witness Statement — Suresh Patil",
+      kind: "DOCUMENT",
+      category: "WITNESS_STATEMENT",
+      actorRole: "POLICE",
+      versions: [
+        {
+          filename: "witness-statement.pdf",
+          mimeType: "application/pdf",
+          versionNumber: 1,
+          changeNote: null,
+        },
+      ],
+    },
+    {
+      title: "Charge Sheet — Dinesh Chavan",
+      kind: "DOCUMENT",
+      category: "CHARGE_SHEET",
+      actorRole: "PROSECUTION",
+      versions: [
+        {
+          filename: "charge-sheet.pdf",
+          mimeType: "application/pdf",
+          versionNumber: 1,
+          changeNote: null,
+        },
+      ],
+    },
+    {
+      title: "Photograph — Disputed Land Sale Documents",
+      kind: "EVIDENCE",
+      evidenceType: "PHOTO",
+      actorRole: "FORENSICS",
+      versions: [
+        {
+          filename: "cctv-frame.jpg",
+          mimeType: "image/jpeg",
+          versionNumber: 1,
+          changeNote: null,
+        },
+      ],
+    },
+  ],
+  "RJN/2026/0033": [
+    {
+      title: "Court Filing — Sessions Court Case Registration",
+      kind: "DOCUMENT",
+      category: "COURT_FILING",
+      actorRole: "COURT",
+      versions: [
+        {
+          filename: "court-filing.pdf",
+          mimeType: "application/pdf",
+          versionNumber: 1,
+          changeNote: null,
+        },
+      ],
+    },
+    {
+      title: "Scene Recording — Farmland Boundary Dispute",
+      kind: "EVIDENCE",
+      evidenceType: "VIDEO_CCTV",
+      actorRole: "FORENSICS",
+      versions: [
+        {
+          filename: "scene-clip.mp4",
+          mimeType: "video/mp4",
+          versionNumber: 1,
+          changeNote: null,
+        },
+      ],
+    },
+    {
+      title: "Witness Call Recording — Ashok Verma",
+      kind: "EVIDENCE",
+      evidenceType: "AUDIO",
+      actorRole: "POLICE",
+      versions: [
+        {
+          filename: "witness-call.mp3",
+          mimeType: "audio/mpeg",
+          versionNumber: 1,
+          changeNote: null,
+        },
+      ],
+    },
+  ],
+  "MUM/2026/0217": [
+    {
+      title: "Judgment — Cyber Fraud Conviction",
+      kind: "DOCUMENT",
+      category: "JUDGMENT",
+      actorRole: "COURT",
+      versions: [
+        {
+          filename: "judgment.pdf",
+          mimeType: "application/pdf",
+          versionNumber: 1,
+          changeNote: null,
+        },
+      ],
+    },
+    {
+      title: "Forensic Data Extract — QuickGain Invest Servers",
+      kind: "EVIDENCE",
+      evidenceType: "FORENSIC_DATA",
+      actorRole: "FORENSICS",
+      versions: [
+        {
+          filename: "forensic-data.zip",
+          mimeType: "application/zip",
+          versionNumber: 1,
+          changeNote: null,
+        },
+      ],
+    },
+    {
+      // D-22 demo moment: a Forensic Report with v1 + v2, to demonstrate
+      // version history.
+      title: "Forensic Report — Digital and Financial Trail Analysis",
+      kind: "DOCUMENT",
+      category: "FORENSIC_REPORT",
+      actorRole: "FORENSICS",
+      versions: [
+        {
+          filename: "fsl-report-v1.pdf",
+          mimeType: "application/pdf",
+          versionNumber: 1,
+          changeNote: null,
+        },
+        {
+          filename: "fsl-report-v2.pdf",
+          mimeType: "application/pdf",
+          versionNumber: 2,
+          changeNote: "Updated with the lab's finalized DNA comparison results.",
+        },
+      ],
+    },
+  ],
+};
+
+// D-22/D-24: attaches one Document + its version(s) to `caseId` inside `tx`,
+// resolving the acting user from `usersByRole` and using its id for BOTH
+// uploadedById/createdById (Document/DocumentVersion) AND actorId/actorRole
+// (AuditLog) — never a placeholder/system actor. Returns the number of
+// one-minute ticks consumed, so callers can stagger consecutive documents.
+async function attachSeedDocument(
+  tx: Prisma.TransactionClient,
+  params: {
+    caseId: string;
+    spec: SeedDocumentSpec;
+    usersByRole: Map<Role, { id: string }>;
+    baseTime: Date;
+    startOffsetMinutes: number;
+  },
+): Promise<number> {
+  const { caseId, spec, usersByRole, baseTime, startOffsetMinutes } = params;
+  const actor = usersByRole.get(spec.actorRole)!;
+  let offset = startOffsetMinutes;
+
+  const document = await tx.document.create({
+    data: {
+      caseId,
+      kind: spec.kind,
+      category: spec.category ?? null,
+      evidenceType: spec.evidenceType ?? null,
+      title: spec.title,
+      description: spec.description,
+      uploadedById: actor.id,
+      uploadedByRole: spec.actorRole,
+      createdAt: new Date(baseTime.getTime() + offset * 60_000),
+    },
+  });
+
+  for (const versionSpec of spec.versions) {
+    // D-06/must-have: same MAX(versionNumber)+1-inside-transaction pattern
+    // as live finalizeUpload — never trust a hardcoded literal, even though
+    // seed order already implies it.
+    const maxVersion = await tx.documentVersion.aggregate({
+      where: { documentId: document.id },
+      _max: { versionNumber: true },
+    });
+    const versionNumber = (maxVersion._max.versionNumber ?? 0) + 1;
+
+    const buffer = await readFile(path.join(SEED_FILES_DIR, versionSpec.filename));
+    const key = `cases/${caseId}/${document.id}/v${versionNumber}-${randomUUID()}`;
+    await getStorageAdapter().putObjectNoOverwrite(key, buffer, versionSpec.mimeType);
+
+    const createdAt = new Date(baseTime.getTime() + offset * 60_000);
+
+    await tx.documentVersion.create({
+      data: {
+        documentId: document.id,
+        versionNumber,
+        storageKey: key,
+        originalFilename: versionSpec.filename,
+        mimeType: versionSpec.mimeType,
+        sizeBytes: buffer.byteLength,
+        changeNote: versionSpec.changeNote,
+        createdById: actor.id,
+        createdByRole: spec.actorRole,
+        createdAt,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        actorId: actor.id,
+        actorRole: spec.actorRole,
+        action: versionNumber === 1 ? "DOCUMENT_UPLOADED" : "DOCUMENT_VERSION_ADDED",
+        targetType: "Document",
+        targetId: document.id,
+        targetLabel: spec.title,
+        details: {
+          caseId,
+          versionNumber,
+          changeNote: versionSpec.changeNote ?? null,
+        },
+        createdAt,
+      },
+    });
+
+    offset += 1;
+  }
+
+  return offset - startOffsetMinutes;
 }
 
 const STAGE_ORDER: Stage[] = [
@@ -197,6 +483,20 @@ async function seedCases() {
         details: { title: heroCase.title, stage: "FIR_REGISTERED" },
       },
     });
+
+    // D-23: the hero case is strictly additive, so its FIR is attached
+    // unconditionally (no idempotency guard needed — this is always a
+    // brand-new case row).
+    let heroOffset = 1;
+    for (const spec of HERO_CASE_DOCUMENTS) {
+      heroOffset += await attachSeedDocument(tx, {
+        caseId: heroCase.id,
+        spec,
+        usersByRole,
+        baseTime: new Date(),
+        startOffsetMinutes: heroOffset,
+      });
+    }
   });
 
   console.log(`Seeded fresh hero case ${heroFirNumber} (additive, D-21).`);
@@ -208,73 +508,107 @@ async function seedCases() {
     const existing = await prisma.case.findUnique({
       where: { firNumber: seedCase.firNumber },
     });
+
+    let caseId: string;
+
     if (existing) {
-      continue;
-    }
+      caseId = existing.id;
+    } else {
+      const targetIndex = STAGE_ORDER.indexOf(seedCase.targetStage);
 
-    const targetIndex = STAGE_ORDER.indexOf(seedCase.targetStage);
-
-    await prisma.$transaction(async (tx) => {
-      const created = await tx.case.create({
-        data: {
-          firNumber: seedCase.firNumber,
-          title: seedCase.title,
-          offenceSections: seedCase.offenceSections,
-          incidentDate: seedCase.incidentDate,
-          policeStation: seedCase.policeStation,
-          complainant: seedCase.complainant,
-          accused: seedCase.accused,
-          description: seedCase.description,
-          stage: seedCase.targetStage,
-          verdict: seedCase.verdict,
-          judgmentSummary: seedCase.judgmentSummary,
-          registeredById: police.id,
-        },
-      });
-
-      for (let i = 0; i <= targetIndex; i++) {
-        const stage = STAGE_ORDER[i];
-        const actorRole = STAGE_ACTOR_ROLE[stage];
-        const actor = usersByRole.get(actorRole)!;
-        const isClosing = stage === "CLOSED_JUDGMENT";
-
-        await tx.stageHistory.create({
+      caseId = await prisma.$transaction(async (tx) => {
+        const created = await tx.case.create({
           data: {
-            caseId: created.id,
-            fromStage: i === 0 ? null : STAGE_ORDER[i - 1],
-            toStage: stage,
-            actorId: actor.id,
-            actorRole,
-            remark:
-              isClosing && seedCase.verdict
-                ? `Verdict: ${seedCase.verdict} — ${seedCase.judgmentSummary}`
-                : null,
+            firNumber: seedCase.firNumber,
+            title: seedCase.title,
+            offenceSections: seedCase.offenceSections,
+            incidentDate: seedCase.incidentDate,
+            policeStation: seedCase.policeStation,
+            complainant: seedCase.complainant,
+            accused: seedCase.accused,
+            description: seedCase.description,
+            stage: seedCase.targetStage,
+            verdict: seedCase.verdict,
+            judgmentSummary: seedCase.judgmentSummary,
+            registeredById: police.id,
           },
         });
 
-        await tx.auditLog.create({
-          data: {
-            actorId: actor.id,
-            actorRole,
-            action:
-              i === 0
-                ? "CASE_REGISTERED"
-                : isClosing
-                  ? "CASE_CLOSED"
-                  : "STAGE_ADVANCED",
-            targetType: "Case",
-            targetId: created.id,
-            targetLabel: created.firNumber,
-            details: {
+        for (let i = 0; i <= targetIndex; i++) {
+          const stage = STAGE_ORDER[i];
+          const actorRole = STAGE_ACTOR_ROLE[stage];
+          const actor = usersByRole.get(actorRole)!;
+          const isClosing = stage === "CLOSED_JUDGMENT";
+
+          await tx.stageHistory.create({
+            data: {
+              caseId: created.id,
               fromStage: i === 0 ? null : STAGE_ORDER[i - 1],
               toStage: stage,
+              actorId: actor.id,
+              actorRole,
+              remark:
+                isClosing && seedCase.verdict
+                  ? `Verdict: ${seedCase.verdict} — ${seedCase.judgmentSummary}`
+                  : null,
             },
-          },
-        });
-      }
-    });
+          });
 
-    supportingCreated += 1;
+          await tx.auditLog.create({
+            data: {
+              actorId: actor.id,
+              actorRole,
+              action:
+                i === 0
+                  ? "CASE_REGISTERED"
+                  : isClosing
+                    ? "CASE_CLOSED"
+                    : "STAGE_ADVANCED",
+              targetType: "Case",
+              targetId: created.id,
+              targetLabel: created.firNumber,
+              details: {
+                fromStage: i === 0 ? null : STAGE_ORDER[i - 1],
+                toStage: stage,
+              },
+            },
+          });
+        }
+
+        return created.id;
+      });
+
+      supportingCreated += 1;
+    }
+
+    // D-22/D-24: attach the sample document/evidence set for this
+    // supporting case (if any is defined) inside its own per-case
+    // transaction — runs on every seed execution, guarded per-document by a
+    // findFirst-then-skip check keyed on caseId+title, mirroring the
+    // existing case-row idempotency check, so re-running the seed never
+    // duplicates documents for already-seeded supporting cases.
+    const docSpecs = SUPPORTING_CASE_DOCUMENTS[seedCase.firNumber];
+    if (docSpecs) {
+      await prisma.$transaction(async (tx) => {
+        let offset = 1;
+        const baseTime = new Date();
+        for (const spec of docSpecs) {
+          const alreadyAttached = await tx.document.findFirst({
+            where: { caseId, title: spec.title },
+          });
+          if (alreadyAttached) {
+            continue;
+          }
+          offset += await attachSeedDocument(tx, {
+            caseId,
+            spec,
+            usersByRole,
+            baseTime,
+            startOffsetMinutes: offset,
+          });
+        }
+      });
+    }
   }
 
   console.log(

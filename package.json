@@ -13,7 +13,7 @@
     "db:seed": "prisma db seed"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "node --conditions=react-server --import tsx prisma/seed.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "5.9.1",
@@ -28,6 +28,7 @@
     "react-dom": "19.2.8",
     "react-dropzone": "20.1.2",
     "react-hook-form": "7.88.0",
+    "server-only": "^0.0.1",
     "zod": "4.6.4"
   },
   "devDependencies": {
