@@ -369,6 +369,14 @@ export async function updateDocumentMetadata(
         }
       }
 
+      // WR-05: nothing to persist or log when the submitted values exactly
+      // match the existing ones (e.g. user opens Edit and clicks Save with
+      // no changes) — a DOCUMENT_UPDATED log row claiming a change occurred
+      // when it didn't would be an inaccuracy in the change log itself.
+      if (Object.keys(changed).length === 0) {
+        return;
+      }
+
       const updated = await tx.document.update({
         where: { id: target.id },
         data: {
